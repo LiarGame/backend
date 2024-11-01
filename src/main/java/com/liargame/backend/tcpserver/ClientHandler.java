@@ -2,12 +2,14 @@ package com.liargame.backend.tcpserver;
 
 import java.io.*;
 import java.net.Socket;
+import java.util.List;
+import java.util.Map;
 
 public class ClientHandler implements Runnable {
     private final Socket socket;
     private BufferedReader br;
     private PrintWriter pw;
-    private GameRoomManager gm;
+    private final GameRoomManager gm;
 
     public ClientHandler(Socket socket, GameRoomManager gm) {
         this.socket = socket;
@@ -23,12 +25,44 @@ public class ClientHandler implements Runnable {
             String request;
             while ((request = br.readLine()) != null) {
                 String type = getType(request);
-                String userName = getName(request);
+                String playerName = getName(request);
+                String code = getRoomCode(request);
                 System.out.println("요청: " + type);
                 switch (type) {
                     case "CREATE_ROOM" -> {
-                        String roomCode = gm.createRoom(userName);
-                        pw.println("{ \"type\": \"ROOM_CREATED\", \"roomCode\": \"" + roomCode + "\" }");
+                        String roomCode;
+                        synchronized (gm) {
+                            roomCode = gm.createRoom(playerName);
+                        }
+                        String response = String.format(
+                                "{ \"action\": \"UNICAST\", \"type\": \"ROOM_CREATED\", \"playerName\": \"%s\", \"roomCode\": \"%s\" }",
+                                playerName, roomCode
+                        );
+                        pw.println(response);
+                    }
+                    case "JOIN" -> {
+                        GameRoom currentRoom;
+                        List<String> players;
+                        synchronized (gm) {
+                            currentRoom = gm.getRoom(code);
+                            players = currentRoom != null ? currentRoom.getPlayers() : null;
+                        }
+                        if (currentRoom != null) {
+                            synchronized (currentRoom) {
+                                currentRoom.addPlayer(playerName);
+                            }
+                            String response = String.format(
+                                    "{ \"action\": \"BROADCAST\", \"type\": \"JOINED\", \"playerList\": %s, \"roomCode\": \"%s\" }",
+                                    players, code
+                            );
+                            pw.println(response);
+                        } else {
+                            String errorResponse = String.format(
+                                    "{ \"action\": \"UNICAST\", \"type\": \"ERROR\", \"playerName\": \"%s\", \"message\": \"방이 존재하지 않습니다.\" }",
+                                    playerName
+                            );
+                            pw.println(errorResponse);
+                        }
                     }
                 }
             }
@@ -71,8 +105,10 @@ public class ClientHandler implements Runnable {
     public static String getType(String request) {
         return getFieldValue(request, "type", "MISSED_TYPE", "요청 타입이 존재하지 않습니다.");
     }
-
     public static String getName(String request) {
         return getFieldValue(request, "playerName", "MISSED_NAME", "사용자의 이름이 존재하지 않습니다.");
+    }
+    public static String getRoomCode(String request) {
+        return getFieldValue(request, "roomCode", "MISSED_ROOM_CODE", "방 코드가 존재하지 않습니다.");
     }
 }

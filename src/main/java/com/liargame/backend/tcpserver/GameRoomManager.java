@@ -17,6 +17,12 @@ public class GameRoomManager {
         return rooms;
     }
 
+    public GameRoom getRoom(String roomCode) {
+        synchronized (rooms) {
+            return rooms.get(roomCode);
+        }
+    }
+
     private String generateRoomCode() {
         return UUID.randomUUID().toString().substring(0, 6).toUpperCase();
     }

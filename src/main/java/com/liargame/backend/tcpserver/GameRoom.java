@@ -13,14 +13,26 @@ public class GameRoom {
         this.roomCode = roomCode;
         this.hostPlayerName = hostPlayerName;
         this.players = new ArrayList<>();
-        this.players.add(hostPlayerName);
     }
 
     public void addPlayer(String playerName) {
-        players.add(playerName);
+        synchronized (players) {
+            players.add(playerName);
+        }
     }
 
     public List<String> getPlayers() {
-        return players;
+        synchronized (players) {
+            return players;
+        }
     }
+
+//    public void broadcast(String message) {
+//        synchronized (players) {
+//            for (PrintWriter pw : players.values()) {
+//                pw.println(message);
+//                pw.flush();
+//            }
+//        }
+//    }
 }
