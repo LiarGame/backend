@@ -12,6 +12,8 @@ repositories {
 dependencies {
     testImplementation platform('org.junit:junit-bom:5.10.0')
     testImplementation 'org.junit.jupiter:junit-jupiter'
+    implementation 'javax.websocket:javax.websocket-api:1.1'
+    implementation 'org.apache.tomcat:tomcat-websocket:9.0.65'
 }
 
 test {
