@@ -4,10 +4,10 @@
 - [x] 기본 WebSocket 서버 설정 및 클라이언트 연결 수락
     - WebSocket 서버 엔드포인트를 설정하고 클라이언트가 연결할 수 있도록 구성합니다.
 
-- [ ] TCP 서버 연결 설정
+- [x] TCP 서버 연결 설정
     - WebSocket 서버에서 TCP 서버와 연결을 설정하여 클라이언트 메시지를 중개할 준비를 완료합니다.
 
-- [ ] TCP 서버에서 수신한 메시지 WebSocket으로 전송
+- [x] TCP 서버에서 수신한 메시지 WebSocket으로 전송
     - TCP 서버로부터 메시지를 수신하여 연결된 WebSocket 클라이언트에게 브로드캐스트합니다.
 
 - [ ] WebSocket 클라이언트의 메시지를 TCP 서버로 중개 (`@OnMessage` 메서드)

@@ -14,6 +14,8 @@ dependencies {
     testImplementation 'org.junit.jupiter:junit-jupiter'
     implementation 'javax.websocket:javax.websocket-api:1.1'
     implementation 'org.apache.tomcat:tomcat-websocket:9.0.65'
+    implementation 'org.json:json:20210307'
+
 }
 
 test {
