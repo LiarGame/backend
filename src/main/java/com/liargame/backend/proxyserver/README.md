@@ -10,7 +10,7 @@
 - [x] TCP 서버에서 수신한 메시지 WebSocket으로 전송
     - TCP 서버로부터 메시지를 수신하여 연결된 WebSocket 클라이언트에게 브로드캐스트합니다.
 
-- [ ] WebSocket 클라이언트의 메시지를 TCP 서버로 중개 (`@OnMessage` 메서드)
+- [x] WebSocket 클라이언트의 메시지를 TCP 서버로 중개 (`@OnMessage` 메서드)
     - WebSocket 클라이언트로부터 전송된 메시지를 TCP 서버로 전달합니다.
 
 - [ ] WebSocket 클라이언트 연결 종료 처리 (`@OnClose` 메서드)
