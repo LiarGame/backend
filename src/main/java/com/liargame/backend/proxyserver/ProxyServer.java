@@ -1,5 +1,7 @@
 package com.liargame.backend.proxyserver;
 
+import com.liargame.backend.message.Message;
+import com.liargame.backend.message.MessageFactory;
 import org.json.JSONObject;
 
 import javax.websocket.*;
@@ -50,10 +52,10 @@ public class ProxyServer {
 
     // WebSocket 클라이언트로부터 메시지를 수신하여 TCP 서버로 전달
     @OnMessage
-    public void onMessage(Session session, String message) {
+    public void onMessage(Session session, String messageJson) {
         try {
-            //TODO: 메시지 타입 확인하고 메시지 클래스 인스턴스 생성하기
-            tcpWriter.writeObject(message);
+            Message messageObject = MessageFactory.createMessage(messageJson);
+            tcpWriter.writeObject(messageObject);
             tcpWriter.flush();
         } catch (IOException e) {
             e.printStackTrace();

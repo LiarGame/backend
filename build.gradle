@@ -16,6 +16,7 @@ dependencies {
     implementation 'javax.websocket:javax.websocket-api:1.1'
     implementation 'org.apache.tomcat:tomcat-websocket:9.0.65'
     implementation 'org.json:json:20210307'
+    implementation 'com.fasterxml.jackson.core:jackson-databind:2.13.0' // 버전은 최신 버전으로 수정 가능
 
 }
 
