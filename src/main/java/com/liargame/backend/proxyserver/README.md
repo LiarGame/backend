@@ -13,8 +13,11 @@
 - [x] WebSocket 클라이언트의 메시지를 TCP 서버로 중개 (`@OnMessage` 메서드)
     - WebSocket 클라이언트로부터 전송된 메시지를 TCP 서버로 전달합니다.
 
-- [ ] WebSocket 클라이언트 연결 종료 처리 (`@OnClose` 메서드)
+- [x] WebSocket 클라이언트 연결 종료 처리 (`@OnClose` 메서드)
     - WebSocket 클라이언트가 연결을 종료할 때, TCP 서버와의 연결도 종료하고 자원을 해제합니다.
 
-- [ ] WebSocket 에러 처리 (`@OnError` 메서드)
+- [x] WebSocket 에러 처리 (`@OnError` 메서드)
     - WebSocket 연결에서 발생하는 에러를 처리하고, 관련 정보를 로그에 기록합니다.
+
+- [x] 메시지 클래스 작성
+  - 클라이언트와 서버 사이의 메시지를 타입별 클래스로 작성합니다.

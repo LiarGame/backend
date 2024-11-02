@@ -38,6 +38,10 @@ public class ProxyServer {
         }
     }
 
+    private static void startTcpResponseListener() {
+        new Thread(() -> receiveTcpMessages()).start();
+    }
+
     // 클라이언트가 WebSocket 서버에 연결될 때 호출
     @OnOpen
     public void onOpen(Session session) {
@@ -99,10 +103,6 @@ public class ProxyServer {
         }
     }
 
-    private static void startTcpResponseListener() {
-        new Thread(() -> receiveTcpMessages()).start();
-    }
-
     // TCP 서버로부터 메시지를 수신하고 처리하는 메서드
     private static void receiveTcpMessages() {
         String tcpResponse;
@@ -122,8 +122,7 @@ public class ProxyServer {
 
         switch (action) {
             case "BROADCAST":
-                String broadcastContent = json.getString("content");
-                MessageSender.broadcastMessage(clients, broadcastContent);
+                MessageSender.broadcastMessage(clients, tcpMessage);
                 break;
             case "UNICAST":
                 String targetUsername = json.getString("playerName");
