@@ -19,8 +19,8 @@ import java.util.logging.Logger;
 public class ProxyServer {
     private static Set<Session> clients = new HashSet<>();
     private static Socket tcpSocket;
-    private static ObjectOutputStream tcpWriter;
-    private static ObjectInputStream tcpReader;
+    private static ObjectOutputStream tcpObjectOutputStream;
+    private static ObjectInputStream tcpObjectInputStream;
     private static final Logger logger = Logger.getLogger(ProxyServer.class.getName());
 
     // 정적 초기화 블록에서 연결 설정과 스레드 시작 메서드 호출
@@ -33,8 +33,8 @@ public class ProxyServer {
     private static void initializeTcpConnection() {
         try {
             tcpSocket = new Socket("localhost", 10001); // TCP 서버의 주소와 포트
-            tcpWriter = new ObjectOutputStream(tcpSocket.getOutputStream());
-            tcpReader = new ObjectInputStream(tcpSocket.getInputStream());
+            tcpObjectOutputStream = new ObjectOutputStream(tcpSocket.getOutputStream());
+            tcpObjectInputStream = new ObjectInputStream(tcpSocket.getInputStream());
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -55,8 +55,8 @@ public class ProxyServer {
     public void onMessage(Session session, String messageJson) {
         try {
             Message messageObject = MessageFactory.createMessage(messageJson);
-            tcpWriter.writeObject(messageObject);
-            tcpWriter.flush();
+            tcpObjectOutputStream.writeObject(messageObject);
+            tcpObjectOutputStream.flush();
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -92,8 +92,8 @@ public class ProxyServer {
     // TCP 서버와의 연결을 닫고 자원 해제
     private static void closeTcpConnection() {
         try {
-            if (tcpWriter != null) tcpWriter.close();
-            if (tcpReader != null) tcpReader.close();
+            if (tcpObjectOutputStream != null) tcpObjectOutputStream.close();
+            if (tcpObjectInputStream != null) tcpObjectInputStream.close();
             if (tcpSocket != null && !tcpSocket.isClosed()) tcpSocket.close();
         } catch (IOException e) {
             e.printStackTrace();
@@ -104,7 +104,7 @@ public class ProxyServer {
     private static void receiveTcpMessages() {
         String tcpResponse;
         try {
-            while ((tcpResponse = tcpReader.readLine()) != null) {
+            while ((tcpResponse = tcpObjectInputStream.readLine()) != null) {
                 handleTcpMessage(tcpResponse);
             }
         } catch (IOException e) {
@@ -114,6 +114,8 @@ public class ProxyServer {
 
     // TCP 메시지를 처리하여 action에 따라 전송 방식 결정
     private static void handleTcpMessage(String tcpMessage) {
+
+        //TODO:메세지 타입 확인하고 타입에 맞는 메시지 클래스 객체를 생성하는 로직 추가
         JSONObject json = new JSONObject(tcpMessage);
         String action = json.getString("action");
 
