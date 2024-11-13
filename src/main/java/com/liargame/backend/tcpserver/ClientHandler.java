@@ -3,7 +3,6 @@ package com.liargame.backend.tcpserver;
 import java.io.*;
 import java.net.Socket;
 import java.util.List;
-import java.util.Map;
 
 public class ClientHandler implements Runnable {
     private final Socket socket;
@@ -29,18 +28,18 @@ public class ClientHandler implements Runnable {
                 String code = getRoomCode(request);
                 System.out.println("요청: " + type);
                 switch (type) {
-                    case "CREATE_ROOM" -> {
+                    case "CREATE_ROOM_REQUEST" -> {
                         String roomCode;
                         synchronized (gm) {
                             roomCode = gm.createRoom(playerName);
                         }
                         String response = String.format(
-                                "{ \"action\": \"UNICAST\", \"type\": \"ROOM_CREATED\", \"playerName\": \"%s\", \"roomCode\": \"%s\" }",
+                                "{ \"action\": \"UNICAST\", \"type\": \"ROOM_CREATE_RESPONSE\", \"playerName\": \"%s\", \"roomCode\": \"%s\" }",
                                 playerName, roomCode
                         );
                         pw.println(response);
                     }
-                    case "JOIN" -> {
+                    case "JOIN_REQUEST" -> {
                         GameRoom currentRoom;
                         List<String> players;
                         synchronized (gm) {
@@ -52,7 +51,7 @@ public class ClientHandler implements Runnable {
                                 currentRoom.addPlayer(playerName);
                             }
                             String response = String.format(
-                                    "{ \"action\": \"BROADCAST\", \"type\": \"JOINED\", \"playerList\": %s, \"roomCode\": \"%s\" }",
+                                    "{ \"action\": \"BROADCAST\", \"type\": \"JOIN_RESPONSE\", \"playerList\": %s, \"roomCode\": \"%s\" }",
                                     players, code
                             );
                             pw.println(response);
