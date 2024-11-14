@@ -2,7 +2,9 @@ package com.liargame.backend.tcpserver;
 
 import java.io.*;
 import java.net.Socket;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 public class ClientHandler implements Runnable {
     private final Socket socket;
@@ -64,6 +66,22 @@ public class ClientHandler implements Runnable {
                                     "{ \"action\": \"BROADCAST\", \"type\": \"JOIN_RESPONSE\", \"playerList\": %s, \"roomCode\": \"%s\" }",
                                     players, code
                             );
+                            pw.println(response);
+                        } else {
+                            String errorResponse = String.format(
+                                    "{ \"action\": \"UNICAST\", \"type\": \"ERROR\", \"playerName\": \"%s\", \"message\": \"방이 존재하지 않습니다.\" }",
+                                    playerName
+                            );
+                            pw.println(errorResponse);
+                        }
+                    }
+                    case "START_GAME_REQUEST" -> {
+                        GameRoom currentRoom;
+                        synchronized (gm) {
+                            currentRoom = gm.getRoom(code);
+                        }
+                        if (currentRoom != null) {
+                            String response = currentRoom.getGameController().startGame();
                             pw.println(response);
                         } else {
                             String errorResponse = String.format(
