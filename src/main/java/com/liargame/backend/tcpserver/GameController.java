@@ -1,5 +1,9 @@
 package com.liargame.backend.tcpserver;
 
+import com.liargame.backend.message.ErrorResponse;
+import com.liargame.backend.message.Message;
+import com.liargame.backend.message.RoleAssignResponse;
+
 import java.util.Collections;
 import java.util.List;
 
@@ -11,24 +15,18 @@ public class GameController {
         this.gameRoom = gameRoom;
     }
 
-    public String startGame() {
-        String word;
-        String liar;
-        TopicEnum topic;
+    public synchronized Message startGame(String playerName) {
         List<String> players = gameRoom.getPlayers();
-        if (players.isEmpty()) {
-            return "{ \"action\": \"UNICAST\", \"type\": \"ERROR\", \"message\": \"플레이어가 없습니다.\" }";
+        if (players.size() < 2) {
+            String message = "게임에 참여한 플레이어는 두 명 이상이어야 합니다.";
+            return new ErrorResponse(playerName, message);
         }
 
         Collections.shuffle(players);
-        liar = players.get(0);
+        String liar = players.get(0);
+        TopicEnum topic = TopicEnum.getRandomTopic();
+        String word = topic.getRandomWord();
 
-        topic = TopicEnum.getRandomTopic();
-        word = topic.getRandomWord();
-
-        return String.format(
-                "{ \"action\": \"BROADCAST\", \"type\": \"ROLE_ASSIGN_RESPONSE\", \"liar\": \"%s\", \"topic\": \"%s\", \"word\": \"%s\", \"roomCode\": \"%s\" }",
-                liar, topic.getTopic(), word, gameRoom.getRoomCode()
-        );
+        return new RoleAssignResponse(liar, topic, word, gameRoom.getRoomCode());
     }
 }
