@@ -22,7 +22,7 @@ public class GameRoom {
         }
     }
 
-    public List<String> getPlayers() {
+    public synchronized List<String> getPlayers() {
         synchronized (players) {
             return players;
         }
