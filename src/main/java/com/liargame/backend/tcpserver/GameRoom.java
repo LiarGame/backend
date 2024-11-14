@@ -6,13 +6,14 @@ import java.util.List;
 
 public class GameRoom {
     private final String roomCode;
-    private final String hostPlayerName;
     private final List<String> players;
+    private final GameController gameController;
 
-    public GameRoom(String roomCode, String hostPlayerName) {
+
+    public GameRoom(String roomCode) {
         this.roomCode = roomCode;
-        this.hostPlayerName = hostPlayerName;
         this.players = new ArrayList<>();
+        this.gameController = new GameController(this);
     }
 
     public void addPlayer(String playerName) {
@@ -27,12 +28,11 @@ public class GameRoom {
         }
     }
 
-//    public void broadcast(String message) {
-//        synchronized (players) {
-//            for (PrintWriter pw : players.values()) {
-//                pw.println(message);
-//                pw.flush();
-//            }
-//        }
-//    }
+    public GameController getGameController() {
+        return gameController;
+    }
+
+    public String getRoomCode() {
+        return roomCode;
+    }
 }
