@@ -30,9 +30,19 @@ public class ClientHandler implements Runnable {
                 switch (type) {
                     case "CREATE_ROOM_REQUEST" -> {
                         String roomCode;
+                        GameRoom currentRoom;
+
                         synchronized (gm) {
-                            roomCode = gm.createRoom(playerName);
+                            roomCode = gm.createRoom();
+                            currentRoom = gm.getRoom(roomCode);
                         }
+
+                        if (currentRoom != null) {
+                            synchronized (currentRoom) {
+                                currentRoom.addPlayer(playerName);
+                            }
+                        }
+
                         String response = String.format(
                                 "{ \"action\": \"UNICAST\", \"type\": \"ROOM_CREATE_RESPONSE\", \"playerName\": \"%s\", \"roomCode\": \"%s\" }",
                                 playerName, roomCode
