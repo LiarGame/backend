@@ -17,11 +17,11 @@ public class MessageFactory {
 
             // type에 따라 객체 생성 및 데이터 설정
             switch (type) {
-                case "ROOM_CREATE_REQUEST" -> {
+                case "CREATE_ROOM_REQUEST" -> {
                     String playerName = rootNode.path("playerName").asText();
                     return new RoomCreateRequest(playerName);
                 }
-                case "ROOM_CREATE_RESPONSE" -> {
+                case "CREATE_ROOM_RESPONSE" -> {
                     String roomCode = rootNode.path("roomCode").asText();
                     return new RoomCreateResponse(type, roomCode);
                 }
