@@ -1,14 +1,16 @@
 package com.liargame.backend.message;
 
+import com.liargame.backend.tcpserver.TopicEnum;
+
 public class RoleAssignResponse implements Message {
     private final String action = "BROADCAST";
     private final String type = "ROLE_ASSIGN_RESPONSE";
     private String liar;
-    private String topic;
+    private TopicEnum topic;
     private String word;
     private String roomCode;
 
-    public RoleAssignResponse(String liar, String topic, String word, String roomCode) {
+    public RoleAssignResponse(String liar, TopicEnum topic, String word, String roomCode) {
         this.liar = liar;
         this.topic = topic;
         this.word = word;
@@ -23,7 +25,7 @@ public class RoleAssignResponse implements Message {
         return liar;
     }
 
-    public String getTopic() {
+    public TopicEnum getTopic() {
         return topic;
     }
 
