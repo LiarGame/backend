@@ -2,6 +2,7 @@ package com.liargame.backend.message;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.liargame.backend.tcpserver.TopicEnum;
 
 import java.util.Collections;
 import java.util.List;
@@ -35,14 +36,14 @@ public class MessageFactory {
                     String roomCode = rootNode.path("roomCode").asText();
                     return new JoinResponse(playerList, roomCode);
                 }
-                case "START_GEME_REQUEST" -> {
+                case "START_GAME_REQUEST" -> {
                     String playerName = rootNode.path("playerName").asText();
                     String roomCode = rootNode.path("roomCode").asText();
                     return new StartGameRequest(playerName, roomCode);
                 }
                 case "ROLE_ASSIGN_RESPONSE" -> {
                     String liar = rootNode.path("liar").asText();
-                    String topic = rootNode.path("topic").asText();
+                    TopicEnum topic = TopicEnum.valueOf(rootNode.path("topic").asText());
                     String word = rootNode.path("word").asText();
                     String roomCode = rootNode.path("roomCode").asText();
                     return new RoleAssignResponse(liar, topic, word, roomCode);
