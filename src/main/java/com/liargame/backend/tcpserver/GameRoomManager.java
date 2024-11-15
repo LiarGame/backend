@@ -6,9 +6,9 @@ import java.util.UUID;
 
 public class GameRoomManager {
     private final Map<String, GameRoom> rooms = new HashMap<>();
-    public String createRoom(String hostPlayerName) {
+    public String createRoom() {
         String roomCode = generateRoomCode();
-        GameRoom gameRoom = new GameRoom(roomCode, hostPlayerName);
+        GameRoom gameRoom = new GameRoom(roomCode);
         rooms.put(roomCode, gameRoom);
         return roomCode;
     }

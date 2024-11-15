@@ -1,14 +1,15 @@
 package com.liargame.backend.tcpserver;
 
+import com.liargame.backend.message.*;
+
 import java.io.*;
 import java.net.Socket;
 import java.util.List;
-import java.util.Map;
 
 public class ClientHandler implements Runnable {
     private final Socket socket;
-    private BufferedReader br;
-    private PrintWriter pw;
+    private ObjectInputStream proxyObjectInputStream;
+    private ObjectOutputStream proxyObjectOutputStream;
     private final GameRoomManager gm;
 
     public ClientHandler(Socket socket, GameRoomManager gm) {
@@ -19,96 +20,100 @@ public class ClientHandler implements Runnable {
     @Override
     public void run() {
         try {
-            br = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-            pw = new PrintWriter(new OutputStreamWriter(socket.getOutputStream()), true);
+            proxyObjectInputStream = new ObjectInputStream(socket.getInputStream());
+            proxyObjectOutputStream = new ObjectOutputStream(socket.getOutputStream());
 
-            String request;
-            while ((request = br.readLine()) != null) {
-                String type = getType(request);
-                String playerName = getName(request);
-                String code = getRoomCode(request);
+            Message request;
+            while ((request = (Message) proxyObjectInputStream.readObject()) != null) {
+                String type = request.getType();
                 System.out.println("요청: " + type);
                 switch (type) {
-                    case "CREATE_ROOM" -> {
-                        String roomCode;
-                        synchronized (gm) {
-                            roomCode = gm.createRoom(playerName);
-                        }
-                        String response = String.format(
-                                "{ \"action\": \"UNICAST\", \"type\": \"ROOM_CREATED\", \"playerName\": \"%s\", \"roomCode\": \"%s\" }",
-                                playerName, roomCode
-                        );
-                        pw.println(response);
-                    }
-                    case "JOIN" -> {
-                        GameRoom currentRoom;
-                        List<String> players;
-                        synchronized (gm) {
-                            currentRoom = gm.getRoom(code);
-                            players = currentRoom != null ? currentRoom.getPlayers() : null;
-                        }
-                        if (currentRoom != null) {
-                            synchronized (currentRoom) {
-                                currentRoom.addPlayer(playerName);
-                            }
-                            String response = String.format(
-                                    "{ \"action\": \"BROADCAST\", \"type\": \"JOINED\", \"playerList\": %s, \"roomCode\": \"%s\" }",
-                                    players, code
-                            );
-                            pw.println(response);
-                        } else {
-                            String errorResponse = String.format(
-                                    "{ \"action\": \"UNICAST\", \"type\": \"ERROR\", \"playerName\": \"%s\", \"message\": \"방이 존재하지 않습니다.\" }",
-                                    playerName
-                            );
-                            pw.println(errorResponse);
-                        }
-                    }
+                    case "CREATE_ROOM_REQUEST" -> handleCreateRoom((RoomCreateRequest) request);
+                    case "JOIN_REQUEST" -> handleJoinRequest((JoinRequest) request);
+                    case "START_GAME_REQUEST" -> handleStartGame((StartGameRequest) request);
                 }
             }
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
             try {
-                if (br != null) br.close();
-                if (pw != null) pw.close();
+                if (proxyObjectInputStream != null) proxyObjectInputStream.close();
+                if (proxyObjectOutputStream != null) proxyObjectOutputStream.close();
                 if (socket != null) socket.close();
             } catch (IOException e) {
                 e.printStackTrace();
             }
         }
     }
-    private static String getFieldValue(String request, String fieldName, String defaultValue, String errorMessage) {
-        String key = "\"" + fieldName + "\":";
-        int keyIndex = request.indexOf(key);
 
-        if (keyIndex != -1) {
-            try {
-                int startIndex = request.indexOf("\"", keyIndex + key.length()) + 1;
-                int endIndex = request.indexOf("\"", startIndex);
+    /**
+     * CreateRoomRequest 요청을 받고, 응답을 반환해주는 method
+     */
+    private void handleCreateRoom(RoomCreateRequest request) throws IOException {
+        String playerName = request.getPlayerName();
+        String roomCode;
+        GameRoom currentRoom;
+        synchronized (gm) {
+            roomCode = gm.createRoom();
+            currentRoom = gm.getRoom(roomCode);
+        }
 
-                if (endIndex != -1) {
-                    return request.substring(startIndex, endIndex);
-                } else {
-                    throw new IllegalArgumentException("'" + fieldName + "' 필드가 존재하지 않습니다.");
-                }
-            } catch (Exception e) {
-                System.err.println(errorMessage + " - " + e.getMessage());
-                return defaultValue;
+        if (currentRoom != null) {
+            synchronized (currentRoom) {
+                currentRoom.addPlayer(playerName);
             }
+        }
+        RoomCreateResponse response = new RoomCreateResponse(playerName, roomCode);
+        proxyObjectOutputStream.writeObject(response);
+        proxyObjectOutputStream.flush();
+    }
+
+    /**
+     * JoinRequest 요청을 받고, 응답을 반환해주는 method
+     */
+    private void handleJoinRequest(JoinRequest request) throws IOException {
+        GameRoom currentRoom;
+        List<String> players;
+        String playerName = request.getPlayerName();
+        String code = request.getRoomCode();
+        synchronized (gm) {
+            currentRoom = gm.getRoom(code);
+            players = currentRoom != null ? currentRoom.getPlayers() : null;
+        }
+        if (currentRoom != null) {
+            synchronized (currentRoom) {
+                currentRoom.addPlayer(playerName);
+            }
+            JoinResponse response = new JoinResponse(players, code);
+            proxyObjectOutputStream.writeObject(response);
+            proxyObjectOutputStream.flush();
         } else {
-            System.err.println(errorMessage);
-            return defaultValue;
+            String message = "방이 존재하지 않습니다.";
+            ErrorResponse response = new ErrorResponse(playerName, message);
+            proxyObjectOutputStream.writeObject(response);
+            proxyObjectOutputStream.flush();
         }
     }
 
-    public static String getType(String request) {
-        return getFieldValue(request, "type", "MISSED_TYPE", "요청 타입이 존재하지 않습니다.");
-    }
-    public static String getName(String request) {
-        return getFieldValue(request, "playerName", "MISSED_NAME", "사용자의 이름이 존재하지 않습니다.");
-    }
-    public static String getRoomCode(String request) {
-        return getFieldValue(request, "roomCode", "MISSED_ROOM_CODE", "방 코드가 존재하지 않습니다.");
+    /**
+     * StartGameRequest 요청을 받고, 응답을 반환해주는 method
+     */
+    private void handleStartGame(StartGameRequest request) throws IOException {
+        String playerName = request.getPlayerName();
+        String code = request.getRoomCode();
+        GameRoom currentRoom;
+        synchronized (gm) {
+            currentRoom = gm.getRoom(code);
+        }
+        if (currentRoom != null) {
+            Message response = currentRoom.getGameController().startGame(playerName);
+            proxyObjectOutputStream.writeObject(response);
+            proxyObjectOutputStream.flush();
+        } else {
+            String message = "방이 존재하지 않습니다.";
+            ErrorResponse response = new ErrorResponse(playerName, message);
+            proxyObjectOutputStream.writeObject(response);
+            proxyObjectOutputStream.flush();
+        }
     }
 }
