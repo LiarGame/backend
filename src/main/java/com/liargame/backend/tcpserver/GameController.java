@@ -1,8 +1,8 @@
 package com.liargame.backend.tcpserver;
 
-import com.liargame.backend.message.ErrorResponse;
+import com.liargame.backend.message.base.ErrorResponse;
 import com.liargame.backend.message.Message;
-import com.liargame.backend.message.RoleAssignResponse;
+import com.liargame.backend.message.game.RoleAssignResponse;
 
 import java.util.Collections;
 import java.util.List;

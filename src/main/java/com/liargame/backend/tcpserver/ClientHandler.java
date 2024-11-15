@@ -1,6 +1,12 @@
 package com.liargame.backend.tcpserver;
 
 import com.liargame.backend.message.*;
+import com.liargame.backend.message.base.ErrorResponse;
+import com.liargame.backend.message.game.StartGameRequest;
+import com.liargame.backend.message.room.JoinRequest;
+import com.liargame.backend.message.room.JoinResponse;
+import com.liargame.backend.message.room.RoomCreateRequest;
+import com.liargame.backend.message.room.RoomCreateResponse;
 
 import java.io.*;
 import java.net.Socket;
