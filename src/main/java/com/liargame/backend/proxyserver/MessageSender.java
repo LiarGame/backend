@@ -2,13 +2,12 @@ package com.liargame.backend.proxyserver;
 
 import org.java_websocket.WebSocket;
 
-import java.io.IOException;
 import java.util.Set;
 
 public class MessageSender {
 
     // 메시지를 클라이언트에게 전송하는 메서드
-    static void sendMessage(WebSocket client, String message) {
+    public static void sendMessage(WebSocket client, String message) {
         try {
             client.send(message);
         } catch (Exception e) {

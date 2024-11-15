@@ -1,13 +1,16 @@
 package com.liargame.backend;
 
 import com.liargame.backend.tcpserver.TcpServer;
-import com.liargame.backend.proxyserver.ProxyServer;
+import com.liargame.backend.proxyserver.WebSocketServer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class ServerManager {
     private TcpServer tcpServer;
-    private ProxyServer webSocketServer;
+    private WebSocketServer webSocketServer;
     private Thread tcpServerThread;
     private Thread webSocketServerThread;
+    private static final Logger logger = LoggerFactory.getLogger(ServerManager.class);
 
     public void startServers() {
         startTcpServer();
@@ -22,39 +25,37 @@ public class ServerManager {
             try {
                 tcpServer.start();
             } catch (Exception e) {
-                System.err.println("TCP 서버 실행 중 오류 발생: " + e.getMessage());
-                e.printStackTrace();
+                logger.error("TCP 서버 실행 중 오류 발생: {}", e.getMessage(), e);
             }
         });
         tcpServerThread.setName("TCP-Server-Thread");
         tcpServerThread.start();
-        System.out.println("TCP 서버가 시작되었습니다.");
+        logger.info("TCP 서버가 시작되었습니다.");
     }
 
     // WebSocket 서버 시작
     private void startWebSocketServer() {
         int webSocketPort = 8080;
-        webSocketServer = new ProxyServer(webSocketPort);
+        webSocketServer = new WebSocketServer(webSocketPort);
         webSocketServerThread = new Thread(() -> {
             try {
                 webSocketServer.start();
             } catch (Exception e) {
-                System.err.println("WebSocket 서버 실행 중 오류 발생: " + e.getMessage());
-                e.printStackTrace();
+                logger.error("WebSocket 서버 실행 중 오류 발생: {}", e.getMessage(), e);
             }
         });
         webSocketServerThread.setName("WebSocket-Server-Thread");
         webSocketServerThread.start();
-        System.out.println("WebSocket 서버가 포트 " + webSocketPort + "에서 시작되었습니다.");
+        logger.info("WebSocket 서버가 포트 {}에서 시작되었습니다.", webSocketPort);
     }
 
     // 서버 종료 처리
     private void addShutdownHook() {
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-            System.out.println("애플리케이션 종료 중...");
+            logger.info("애플리케이션 종료 중...");
             stopTcpServer();
             stopWebSocketServer();
-            System.out.println("모든 서버가 정상적으로 종료되었습니다.");
+            logger.info("모든 서버가 정상적으로 종료되었습니다.");
         }));
     }
 
@@ -64,10 +65,9 @@ public class ServerManager {
             try {
                 // todo: tcp server 종료 구현
                 // tcpServer.stop();
-                System.out.println("TCP 서버가 종료되었습니다.");
+                logger.info("TCP 서버가 종료되었습니다.");
             } catch (Exception e) {
-                System.err.println("TCP 서버 종료 중 오류 발생: " + e.getMessage());
-                e.printStackTrace();
+                logger.error("TCP 서버 종료 중 오류 발생: {}", e.getMessage(), e);
             }
         }
     }
@@ -77,10 +77,9 @@ public class ServerManager {
         if (webSocketServer != null) {
             try {
                 webSocketServer.stop();
-                System.out.println("WebSocket 서버가 종료되었습니다.");
+                logger.info("WebSocket 서버가 종료되었습니다.");
             } catch (Exception e) {
-                System.err.println("WebSocket 서버 종료 중 오류 발생: " + e.getMessage());
-                e.printStackTrace();
+                logger.error("WebSocket 서버 종료 중 오류 발생: {}", e.getMessage(), e);
             }
         }
     }
