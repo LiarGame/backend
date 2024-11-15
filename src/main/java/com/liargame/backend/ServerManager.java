@@ -11,6 +11,7 @@ public class ServerManager {
     private Thread tcpServerThread;
     private Thread webSocketServerThread;
     private static final Logger logger = LoggerFactory.getLogger(ServerManager.class);
+    private final int WEBSOCKET_SERVER_PORT = 8080;
 
     public void startServers() {
         startTcpServer();
@@ -35,8 +36,7 @@ public class ServerManager {
 
     // WebSocket 서버 시작
     private void startWebSocketServer() {
-        int webSocketPort = 8080;
-        webSocketServer = new WebSocketServer(webSocketPort);
+        webSocketServer = new WebSocketServer(WEBSOCKET_SERVER_PORT);
         webSocketServerThread = new Thread(() -> {
             try {
                 webSocketServer.start();
@@ -46,7 +46,7 @@ public class ServerManager {
         });
         webSocketServerThread.setName("WebSocket-Server-Thread");
         webSocketServerThread.start();
-        logger.info("WebSocket 서버가 포트 {}에서 시작되었습니다.", webSocketPort);
+        logger.info("WebSocket 서버가 포트 {}에서 시작되었습니다.", WEBSOCKET_SERVER_PORT);
     }
 
     // 서버 종료 처리
