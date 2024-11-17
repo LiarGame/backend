@@ -39,7 +39,8 @@
         function createRoom() {
             const message = {
                 type: "CREATE_ROOM_REQUEST",
-                playerName: "User1"
+                playerName: "User1",
+                roomCode:"2323"
             };
             socket.send(JSON.stringify(message));
         }
