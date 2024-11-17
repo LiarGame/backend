@@ -43,7 +43,7 @@ public class WebSocketServer extends org.java_websocket.server.WebSocketServer {
                 String roomCode = json.optString("roomCode");
                 String playerName = json.optString("playerName");
 
-                if (type.equals("CREATE_ROOM_REQUEST") || type.equals("JOIN_REQUEST")) {
+                if (type.equals("JOIN_REQUEST")) {
                     WebSocketService.addClient(roomCode, playerName, conn);
                     logger.info("클라이언트가 방에 참여했습니다: roomCode={}, playerName={}", roomCode, playerName);
                 }

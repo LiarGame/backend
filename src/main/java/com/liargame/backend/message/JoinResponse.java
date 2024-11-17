@@ -14,6 +14,14 @@ public class JoinResponse implements Response {
         this.roomCode = roomCode;
     }
 
+    public List<String> getPlayerList() {
+        return playerList;
+    }
+
+    public String getRoomCode() {
+        return roomCode;
+    }
+
     @Override
     public String getType() {
         return type;

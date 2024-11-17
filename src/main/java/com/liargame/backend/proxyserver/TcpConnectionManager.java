@@ -2,6 +2,7 @@ package com.liargame.backend.proxyserver;
 
 import com.liargame.backend.message.Message;
 import com.liargame.backend.message.Response;
+import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -38,7 +39,6 @@ public class TcpConnectionManager {
             // TCP 서버로부터 응답 수신
             Object responseObject = in.readObject();
             logger.info("TCP 서버로부터 응답 수신이 완료되었습니다.");
-
             if (responseObject instanceof Response) {
                 Response response = (Response) responseObject;
                 return response;

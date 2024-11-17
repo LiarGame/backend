@@ -20,11 +20,11 @@ public class MessageFactory {
             switch (type) {
                 case "CREATE_ROOM_REQUEST" -> {
                     String playerName = rootNode.path("playerName").asText();
-                    return new RoomCreateRequest(playerName);
+                    return new CreateRoomRequest(playerName);
                 }
                 case "CREATE_ROOM_RESPONSE" -> {
                     String roomCode = rootNode.path("roomCode").asText();
-                    return new RoomCreateResponse(type, roomCode);
+                    return new CreateRoomResponse(type, roomCode);
                 }
                 case "JOIN_REQUEST" -> {
                     String playerName = rootNode.path("playerName").asText();

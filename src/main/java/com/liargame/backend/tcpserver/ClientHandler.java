@@ -28,7 +28,7 @@ public class ClientHandler implements Runnable {
                 String type = request.getType();
                 System.out.println("요청: " + type);
                 switch (type) {
-                    case "CREATE_ROOM_REQUEST" -> handleCreateRoom((RoomCreateRequest) request);
+                    case "CREATE_ROOM_REQUEST" -> handleCreateRoom((CreateRoomRequest) request);
                     case "JOIN_REQUEST" -> handleJoinRequest((JoinRequest) request);
                     case "START_GAME_REQUEST" -> handleStartGame((StartGameRequest) request);
                 }
@@ -49,7 +49,7 @@ public class ClientHandler implements Runnable {
     /**
      * CreateRoomRequest 요청을 받고, 응답을 반환해주는 method
      */
-    private void handleCreateRoom(RoomCreateRequest request) throws IOException {
+    private void handleCreateRoom(CreateRoomRequest request) throws IOException {
         String playerName = request.getPlayerName();
         String roomCode;
         GameRoom currentRoom;
@@ -63,7 +63,7 @@ public class ClientHandler implements Runnable {
                 currentRoom.addPlayer(playerName);
             }
         }
-        RoomCreateResponse response = new RoomCreateResponse(playerName, roomCode);
+        CreateRoomResponse response = new CreateRoomResponse(playerName, roomCode);
         proxyObjectOutputStream.writeObject(response);
         proxyObjectOutputStream.flush();
     }

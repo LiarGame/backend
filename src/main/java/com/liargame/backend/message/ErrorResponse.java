@@ -3,6 +3,15 @@ package com.liargame.backend.message;
 public class ErrorResponse implements Response {
     private final String action = "UNICAST";
     private final String type = "ERROR";
+
+    public String getPlayerName() {
+        return playerName;
+    }
+
+    public String getMessage() {
+        return message;
+    }
+
     private String playerName;
     private String message;
 

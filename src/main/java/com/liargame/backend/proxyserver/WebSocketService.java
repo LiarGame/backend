@@ -66,7 +66,7 @@ public class WebSocketService {
     public static void broadcastMessage(String roomCode, String message) {
         Map<String, WebSocket> room = rooms.get(roomCode);
         if (room != null) {
-            MessageSender.broadcastMessage((Set<WebSocket>) room.values(), message); // MessageSender로 위임
+            MessageSender.broadcastMessage(room.values(), message); // MessageSender로 위임
         }
     }
 

@@ -1,10 +1,10 @@
 package com.liargame.backend.message;
 
-public class RoomCreateRequest implements Message {
-    private final String type = "ROOM_CREATE_REQUEST";
+public class CreateRoomRequest implements Message {
+    private final String type = "CREATE_ROOM_REQUEST";
     private String playerName;
 
-    public RoomCreateRequest(String playerName) {
+    public CreateRoomRequest(String playerName) {
         this.playerName = playerName;
     }
 

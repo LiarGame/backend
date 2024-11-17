@@ -21,7 +21,6 @@ public class MessageHandler {
                 Message clientMessage = MessageFactory.createMessage(messageJson);
                 // TCP 서버로 메시지 전송 및 응답 수신
                 Response tcpResponse = TcpConnectionManager.sendMessageAndReceiveResponse(clientMessage);
-
                 if (tcpResponse == null) {
                     logger.warn("TCP 서버로부터 응답을 받지 못했습니다.");
                     sendErrorMessage(client, "TCP 서버로 부터 응답을 받지 못해 오류가 발생했습니다.");
@@ -30,8 +29,16 @@ public class MessageHandler {
 
                 // TCP 응답 처리
                 JSONObject responseJson = new JSONObject(tcpResponse);
+                logger.info("TCP서버의 응답: {}", responseJson);
                 String responseAction = tcpResponse.getAction();
-                String roomCode = responseJson.getString("roomCode");
+                String type = responseJson.getString("type");
+                String roomCode = responseJson.optString("roomCode");
+                String playerName = responseJson.optString("playerName");
+
+                if (type.equals("CREATE_ROOM_RESPONSE")) {
+                    WebSocketService.addClient(roomCode, playerName, client);
+                    logger.info("클라이언트가 방에 참여했습니다: roomCode={}, playerName={}", roomCode, playerName);
+                }
                 switch (responseAction) {
                     case "BROADCAST":
                         handleBroadcastMessage(roomCode, String.valueOf(responseJson));
