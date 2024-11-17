@@ -1,44 +1,54 @@
 package com.liargame.backend.proxyserver;
 
+import com.liargame.backend.message.Message;
+import com.liargame.backend.message.Response;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
+import java.io.*;
 import java.net.Socket;
 
 public class TcpConnectionManager {
     private static final Logger logger = LoggerFactory.getLogger(TcpConnectionManager.class);
     private static Socket tcpSocket;
-    private static PrintWriter out;
-    private static BufferedReader in;
+    private static ObjectOutputStream out;
+    private static ObjectInputStream in;
 
     // TCP 서버 초기화
     public static void initializeConnection(String host, int port) throws IOException {
         try {
             tcpSocket = new Socket(host, port);
-            out = new PrintWriter(tcpSocket.getOutputStream(), true);
-            in = new BufferedReader(new InputStreamReader(tcpSocket.getInputStream()));
-            logger.info("웹 소켓 서버에서 TCP 서버 {}:{}에 연결되었습니다.", host, port);
+            out = new ObjectOutputStream(tcpSocket.getOutputStream());
+            in = new ObjectInputStream(tcpSocket.getInputStream());
+            logger.info("TCP 서버 {}:{}에 연결되었습니다.", host, port);
         } catch (IOException e) {
-            logger.error("웹 소켓 서버에서 TCP 서버 연결 중 오류 발생: {}:{}", host, port, e);
+            logger.error("TCP 서버 연결 중 오류 발생: {}:{}", host, port, e);
             throw e;
         }
     }
 
-    // 메시지 전송 및 응답 수신
-    public static String sendMessageAndReceiveResponse(String message) throws IOException {
+    // TCP 서버로 메시지를 전송하고 응답을 받는 메서드
+    public static synchronized Response sendMessageAndReceiveResponse(Message message) {
         try {
-            logger.debug("TCP 서버로 메시지 전송: {}", message);
-            out.println(message);
-            String response = in.readLine();
-            logger.debug("TCP 서버로부터 응답 수신: {}", response);
-            return response;
-        } catch (IOException e) {
-            logger.error("메시지 전송 또는 응답 수신 중 오류 발생", e);
-            throw e;
+            // 메시지 전송
+            logger.info("TCP 서버로 메시지를 전송합니다");
+            out.writeObject(message);
+            out.flush();
+            logger.info("TCP 서버로부터 응답 수신을 기다리고 있습니다...");
+            // TCP 서버로부터 응답 수신
+            Object responseObject = in.readObject();
+            logger.info("TCP 서버로부터 응답 수신이 완료되었습니다.");
+
+            if (responseObject instanceof Response) {
+                Response response = (Response) responseObject;
+                return response;
+            } else {
+                logger.warn("TCP 서버로부터 알 수 없는 형식의 응답을 받았습니다.");
+                return null;
+            }
+        } catch (IOException | ClassNotFoundException e) {
+            logger.error("TCP 서버와의 통신 중 오류 발생", e);
+            return null;
         }
     }
 
@@ -47,10 +57,10 @@ public class TcpConnectionManager {
         try {
             if (tcpSocket != null && !tcpSocket.isClosed()) {
                 tcpSocket.close();
-                logger.info("웹 소켓 서버에서 TCP 서버와의 연결이 종료되었습니다.");
+                logger.info("TCP 서버와의 연결이 종료되었습니다.");
             }
         } catch (IOException e) {
-            logger.error("웹 소켓 서버에서 TCP 연결 종료 중 오류 발생", e);
+            logger.error("TCP 연결 종료 중 오류 발생", e);
         }
     }
 }

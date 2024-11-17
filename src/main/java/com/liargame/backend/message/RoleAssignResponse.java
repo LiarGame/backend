@@ -2,7 +2,7 @@ package com.liargame.backend.message;
 
 import com.liargame.backend.tcpserver.TopicEnum;
 
-public class RoleAssignResponse implements Message {
+public class RoleAssignResponse implements Response {
     private final String action = "BROADCAST";
     private final String type = "ROLE_ASSIGN_RESPONSE";
     private String liar;

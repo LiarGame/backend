@@ -1,6 +1,6 @@
 package com.liargame.backend.message;
 
-public class ErrorResponse implements Message {
+public class ErrorResponse implements Response {
     private final String action = "UNICAST";
     private final String type = "ERROR";
     private String playerName;
@@ -14,5 +14,10 @@ public class ErrorResponse implements Message {
     @Override
     public String getType() {
         return type;
+    }
+
+    @Override
+    public String getAction() {
+        return action;
     }
 }

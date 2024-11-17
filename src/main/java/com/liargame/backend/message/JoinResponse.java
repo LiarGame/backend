@@ -2,7 +2,7 @@ package com.liargame.backend.message;
 
 import java.util.List;
 
-public class JoinResponse implements Message {
+public class JoinResponse implements Response {
 
     private final String action = "BROADCAST";
     private final String type = "JOIN_RESPONSE";
@@ -17,5 +17,10 @@ public class JoinResponse implements Message {
     @Override
     public String getType() {
         return type;
+    }
+
+    @Override
+    public String getAction() {
+        return action;
     }
 }

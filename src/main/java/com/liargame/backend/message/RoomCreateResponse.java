@@ -1,6 +1,6 @@
 package com.liargame.backend.message;
 
-public class RoomCreateResponse implements Message {
+public class RoomCreateResponse implements Response {
     private final String action = "UNICAST";
     private final String type = "ROOM_CREATE_RESPONSE";
     private String playerName;

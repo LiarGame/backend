@@ -28,6 +28,41 @@ public class WebSocketService {
         }
     }
 
+    // WebSocket 객체로 클라이언트 제거
+    public static void removeClient(WebSocket conn) {
+        for (String roomCode : rooms.keySet()) {
+            Map<String, WebSocket> room = rooms.get(roomCode);
+
+            // 연결 객체를 찾기 위해 방을 순회
+            if (room != null) {
+                String playerName = null;
+
+                // 연결 객체와 일치하는 플레이어 이름 찾기
+                for (Map.Entry<String, WebSocket> entry : room.entrySet()) {
+                    if (entry.getValue().equals(conn)) {
+                        playerName = entry.getKey();
+                        break;
+                    }
+                }
+
+                // 연결 객체가 발견되면 제거
+                if (playerName != null) {
+                    room.remove(playerName);
+                    logger.info("방 {}에서 사용자 {} 제거됨 (연결 객체 기준).", roomCode, playerName);
+
+                    // 방이 비어 있으면 삭제
+                    if (room.isEmpty()) {
+                        rooms.remove(roomCode);
+                        logger.info("방 {}이 비어 있어 삭제됨.", roomCode);
+                    }
+                    return;
+                }
+            }
+        }
+
+        logger.warn("제거할 클라이언트를 찾지 못했습니다 (연결 객체 기준).");
+    }
+
     public static void broadcastMessage(String roomCode, String message) {
         Map<String, WebSocket> room = rooms.get(roomCode);
         if (room != null) {
