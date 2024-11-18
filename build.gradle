@@ -13,10 +13,14 @@ repositories {
 dependencies {
     testImplementation platform('org.junit:junit-bom:5.10.0')
     testImplementation 'org.junit.jupiter:junit-jupiter'
-    implementation 'javax.websocket:javax.websocket-api:1.1'
-    implementation 'org.apache.tomcat:tomcat-websocket:9.0.65'
-    implementation 'org.json:json:20210307'
-    implementation 'com.fasterxml.jackson.core:jackson-databind:2.13.0' // 버전은 최신 버전으로 수정 가능
+    implementation 'org.java-websocket:Java-WebSocket:1.5.3'
+    // JSON 데이터의 직렬화/역직렬화 관련 라이브러리
+    implementation 'com.google.code.gson:gson:2.10.1'
+    implementation 'org.json:json:20231013'
+    implementation 'com.fasterxml.jackson.core:jackson-databind:2.13.4.2'
+    // 로깅
+    implementation 'org.slf4j:slf4j-api:2.0.9'
+    implementation 'ch.qos.logback:logback-classic:1.4.11'
 
 }
 

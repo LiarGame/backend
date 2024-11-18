@@ -4,10 +4,10 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.liargame.backend.message.game.RoleAssignResponse;
 import com.liargame.backend.message.game.StartGameRequest;
+import com.liargame.backend.message.room.CreateRoomRequest;
+import com.liargame.backend.message.room.CreateRoomResponse;
 import com.liargame.backend.message.room.JoinRequest;
 import com.liargame.backend.message.room.JoinResponse;
-import com.liargame.backend.message.room.RoomCreateRequest;
-import com.liargame.backend.message.room.RoomCreateResponse;
 import com.liargame.backend.tcpserver.TopicEnum;
 
 import java.util.Collections;
@@ -26,11 +26,11 @@ public class MessageFactory {
             switch (type) {
                 case "CREATE_ROOM_REQUEST" -> {
                     String playerName = rootNode.path("playerName").asText();
-                    return new RoomCreateRequest(playerName);
+                    return new CreateRoomRequest(playerName);
                 }
                 case "CREATE_ROOM_RESPONSE" -> {
                     String roomCode = rootNode.path("roomCode").asText();
-                    return new RoomCreateResponse(type, roomCode);
+                    return new CreateRoomResponse(type, roomCode);
                 }
                 case "JOIN_REQUEST" -> {
                     String playerName = rootNode.path("playerName").asText();

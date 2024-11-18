@@ -1,8 +1,8 @@
 package com.liargame.backend.message.game;
 
-import com.liargame.backend.message.Message;
+import com.liargame.backend.message.Response;
 
-public class SpeakResponse implements Message {
+public class SpeakResponse implements Response {
     private final String action = "BROADCAST";
     private final String type = "SPEAK_RESPONSE";
     private String playerName;

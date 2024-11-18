@@ -1,10 +1,19 @@
 package com.liargame.backend.message.base;
 
-import com.liargame.backend.message.Message;
+import com.liargame.backend.message.Response;
 
-public class ErrorResponse implements Message {
+public class ErrorResponse implements Response {
     private final String action = "UNICAST";
     private final String type = "ERROR";
+
+    public String getPlayerName() {
+        return playerName;
+    }
+
+    public String getMessage() {
+        return message;
+    }
+
     private String playerName;
     private String message;
 
@@ -16,5 +25,10 @@ public class ErrorResponse implements Message {
     @Override
     public String getType() {
         return type;
+    }
+
+    @Override
+    public String getAction() {
+        return action;
     }
 }

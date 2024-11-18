@@ -1,27 +1,29 @@
 package com.liargame.backend.proxyserver;
 
-import javax.websocket.Session;
-import java.io.IOException;
-import java.util.List;
+import org.java_websocket.WebSocket;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.Collection;
 import java.util.Set;
 
 public class MessageSender {
+    private static final Logger logger = LoggerFactory.getLogger(MessageHandler.class);
 
-    // 메시지를 클라이언트에게 전송하는 기본 메서드
-    static void sendMessage(Session session, String message) {
+    // 메시지를 클라이언트에게 전송하는 메서드
+    public static void sendMessage(WebSocket client, String message) {
         try {
-            session.getBasicRemote().sendText(message);
-        } catch (IOException e) {
+            client.send(message);
+            logger.info("메시지 전송을 완료하였습니다");
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
     // 모든 클라이언트에게 메시지 브로드캐스트
-    public static void broadcastMessage(Set<Session> clients, String message) {
-        for (Session client : clients) {
+    public static void broadcastMessage(Collection<WebSocket> clients, String message) {
+        for (WebSocket client : clients) {
             sendMessage(client, message);
         }
     }
 }
-
-
