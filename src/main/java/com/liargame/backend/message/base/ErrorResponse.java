@@ -1,4 +1,6 @@
-package com.liargame.backend.message;
+package com.liargame.backend.message.base;
+
+import com.liargame.backend.message.Response;
 
 public class ErrorResponse implements Response {
     private final String action = "UNICAST";
