@@ -2,13 +2,13 @@ package com.liargame.backend.message.game;
 
 import com.liargame.backend.message.Message;
 
-public class SpeakTurnRequest implements Message {
-    private final String type = "SPEAK_TURN_REQUEST";
+public class SpeakRequest implements Message {
+    private final String type = "SPEAK_REQUEST";
     private String playerName;
     private String message;
     private String roomCode;
 
-    public SpeakTurnRequest(String playerName, String message, String roomCode) {
+    public SpeakRequest(String playerName, String message, String roomCode) {
         this.playerName = playerName;
         this.message = message;
         this.roomCode = roomCode;
@@ -28,6 +28,6 @@ public class SpeakTurnRequest implements Message {
 
     @Override
     public String getType() {
-        return null;
+        return type;
     }
 }

@@ -4,7 +4,7 @@ import com.liargame.backend.message.Message;
 
 public class SpeakTurnResponse implements Message {
     private final String action = "BROADCAST";
-    private final String type = "SPEAK_TURN_RESPONSE";
+    private final String type = "SPEAK_RESPONSE";
     private String playerName;
     private String message;
     private String roomCode;
@@ -33,6 +33,6 @@ public class SpeakTurnResponse implements Message {
 
     @Override
     public String getType() {
-        return null;
+        return type;
     }
 }
