@@ -89,6 +89,13 @@ public class ClientHandler implements Runnable {
             players = currentRoom != null ? currentRoom.getPlayers() : null;
         }
         if (currentRoom != null) {
+            if (players.contains(playerName)) {
+                String errorMessage = "중복된 플레이어 이름입니다.";
+                ErrorResponse response = new ErrorResponse(playerName, errorMessage);
+                proxyObjectOutputStream.writeObject(response);
+                proxyObjectOutputStream.flush();
+                return;
+            }
             synchronized (currentRoom) {
                 currentRoom.addPlayer(playerName);
             }
