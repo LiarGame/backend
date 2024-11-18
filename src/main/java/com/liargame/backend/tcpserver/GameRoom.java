@@ -8,7 +8,7 @@ public class GameRoom {
     private final String roomCode;
     private final List<String> players;
     private final GameController gameController;
-
+    private int speakCount;
 
     public GameRoom(String roomCode) {
         this.roomCode = roomCode;
@@ -34,5 +34,13 @@ public class GameRoom {
 
     public String getRoomCode() {
         return roomCode;
+    }
+
+    public int getSpeakCount() {
+        return speakCount;
+    }
+
+    public void incrementSpeakCount() {
+        speakCount++;
     }
 }
