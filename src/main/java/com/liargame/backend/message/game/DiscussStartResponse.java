@@ -1,9 +1,8 @@
 package com.liargame.backend.message.game;
 
-import com.liargame.backend.message.Message;
-import com.liargame.backend.tcpserver.TopicEnum;
+import com.liargame.backend.message.Response;
 
-public class DiscussStartResponse implements Message {
+public class DiscussStartResponse implements Response {
     private final String action = "BROADCAST";
     private final String type = "DISCUSS_START_RESPONSE";
     private String roomCode;
@@ -12,6 +11,7 @@ public class DiscussStartResponse implements Message {
         this.roomCode = roomCode;
     }
 
+    @Override
     public String getAction() {
         return action;
     }
