@@ -2,6 +2,7 @@ package com.liargame.backend.tcpserver;
 
 import com.liargame.backend.message.*;
 import com.liargame.backend.message.base.ErrorResponse;
+import com.liargame.backend.message.game.SpeakRequest;
 import com.liargame.backend.message.game.StartGameRequest;
 import com.liargame.backend.message.room.JoinRequest;
 import com.liargame.backend.message.room.JoinResponse;
@@ -37,6 +38,7 @@ public class ClientHandler implements Runnable {
                     case "CREATE_ROOM_REQUEST" -> handleCreateRoom((RoomCreateRequest) request);
                     case "JOIN_REQUEST" -> handleJoinRequest((JoinRequest) request);
                     case "START_GAME_REQUEST" -> handleStartGame((StartGameRequest) request);
+                    case "SPEAK_REQUEST" -> handleSpeakTurn((SpeakRequest) request);
                 }
             }
         } catch (Exception e) {
@@ -94,8 +96,8 @@ public class ClientHandler implements Runnable {
             proxyObjectOutputStream.writeObject(response);
             proxyObjectOutputStream.flush();
         } else {
-            String message = "방이 존재하지 않습니다.";
-            ErrorResponse response = new ErrorResponse(playerName, message);
+            String errorMessage = "방이 존재하지 않습니다.";
+            ErrorResponse response = new ErrorResponse(playerName, errorMessage);
             proxyObjectOutputStream.writeObject(response);
             proxyObjectOutputStream.flush();
         }
@@ -116,8 +118,31 @@ public class ClientHandler implements Runnable {
             proxyObjectOutputStream.writeObject(response);
             proxyObjectOutputStream.flush();
         } else {
-            String message = "방이 존재하지 않습니다.";
-            ErrorResponse response = new ErrorResponse(playerName, message);
+            String errorMessage = "방이 존재하지 않습니다.";
+            ErrorResponse response = new ErrorResponse(playerName, errorMessage);
+            proxyObjectOutputStream.writeObject(response);
+            proxyObjectOutputStream.flush();
+        }
+    }
+
+    /**
+     * SpeakRequest 요청을 받고, 응답을 반환해주는 method
+     */
+    private void handleSpeakTurn(SpeakRequest request) throws IOException {
+        String playerName = request.getPlayerName();
+        String message = request.getMessage();
+        String code = request.getRoomCode();
+        GameRoom currentRoom;
+        synchronized (gm) {
+            currentRoom = gm.getRoom(code);
+        }
+        if (currentRoom != null) {
+            Message response = currentRoom.getGameController().speakTurn(playerName, message);
+            proxyObjectOutputStream.writeObject(response);
+            proxyObjectOutputStream.flush();
+        } else {
+            String errorMessage = "방이 존재하지 않습니다.";
+            ErrorResponse response = new ErrorResponse(playerName, errorMessage);
             proxyObjectOutputStream.writeObject(response);
             proxyObjectOutputStream.flush();
         }
