@@ -13,7 +13,11 @@ import java.io.*;
 import java.net.Socket;
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public class ClientHandler implements Runnable {
+    private static final Logger logger = LoggerFactory.getLogger(ClientHandler.class);
     private final Socket socket;
     private ObjectInputStream proxyObjectInputStream;
     private ObjectOutputStream proxyObjectOutputStream;
@@ -33,7 +37,7 @@ public class ClientHandler implements Runnable {
             Message request;
             while ((request = (Message) proxyObjectInputStream.readObject()) != null) {
                 String type = request.getType();
-                System.out.println("요청: " + type);
+                logger.info("WebSocket으로부터 요청을 받았습니다: type={}", type);
                 switch (type) {
                     case "CREATE_ROOM_REQUEST" -> handleCreateRoom((CreateRoomRequest) request);
                     case "JOIN_REQUEST" -> handleJoinRequest((JoinRequest) request);
@@ -58,6 +62,7 @@ public class ClientHandler implements Runnable {
      * CreateRoomRequest 요청을 받고, 응답을 반환해주는 method
      */
     private void handleCreateRoom(CreateRoomRequest request) throws IOException {
+        logger.info("방 생성 요청 수신: playerName={}", request.getPlayerName());
         String playerName = request.getPlayerName();
         String roomCode;
         GameRoom currentRoom;
@@ -80,29 +85,34 @@ public class ClientHandler implements Runnable {
      * JoinRequest 요청을 받고, 응답을 반환해주는 method
      */
     private void handleJoinRequest(JoinRequest request) throws IOException {
+        logger.info("방 참여 요청 수신: playerName={}", request.getPlayerName());
         GameRoom currentRoom;
         List<String> players;
         String playerName = request.getPlayerName();
         String code = request.getRoomCode();
+
         synchronized (gm) {
             currentRoom = gm.getRoom(code);
-            players = currentRoom != null ? currentRoom.getPlayers() : null;
         }
+
         if (currentRoom != null) {
-            if (players.contains(playerName)) {
-                String errorMessage = "중복된 플레이어 이름입니다.";
-                ErrorResponse response = new ErrorResponse(playerName, errorMessage);
-                proxyObjectOutputStream.writeObject(response);
-                proxyObjectOutputStream.flush();
-                return;
-            }
             synchronized (currentRoom) {
+                players = currentRoom.getPlayers();
+                if (players.contains(playerName)) {
+                    logger.error("중복된 플레이어 이름입니다: playerName={}", playerName);
+                    ErrorResponse response = new ErrorResponse(playerName, "중복된 플레이어 이름입니다.");
+                    proxyObjectOutputStream.writeObject(response);
+                    proxyObjectOutputStream.flush();
+                    return;
+                }
                 currentRoom.addPlayer(playerName);
+                players = currentRoom.getPlayers();
             }
             JoinResponse response = new JoinResponse(players, code);
             proxyObjectOutputStream.writeObject(response);
             proxyObjectOutputStream.flush();
         } else {
+            logger.error("방이 존재하지 않습니다: roomCode={}", code);
             String errorMessage = "방이 존재하지 않습니다.";
             ErrorResponse response = new ErrorResponse(playerName, errorMessage);
             proxyObjectOutputStream.writeObject(response);
@@ -114,6 +124,7 @@ public class ClientHandler implements Runnable {
      * StartGameRequest 요청을 받고, 응답을 반환해주는 method
      */
     private void handleStartGame(StartGameRequest request) throws IOException {
+        logger.info("게임 시작 요청 수신: roomCode={}", request.getRoomCode());
         String playerName = request.getPlayerName();
         String code = request.getRoomCode();
         GameRoom currentRoom;
@@ -125,6 +136,7 @@ public class ClientHandler implements Runnable {
             proxyObjectOutputStream.writeObject(response);
             proxyObjectOutputStream.flush();
         } else {
+            logger.error("방이 존재하지 않습니다: roomCode={}", code);
             String errorMessage = "방이 존재하지 않습니다.";
             ErrorResponse response = new ErrorResponse(playerName, errorMessage);
             proxyObjectOutputStream.writeObject(response);
@@ -136,6 +148,7 @@ public class ClientHandler implements Runnable {
      * SpeakRequest 요청을 받고, 응답을 반환해주는 method
      */
     private void handleSpeakTurn(SpeakRequest request) throws IOException {
+        logger.info("플레이어 발언 요청 수신: playerName={}", request.getPlayerName());
         String playerName = request.getPlayerName();
         String message = request.getMessage();
         String code = request.getRoomCode();
@@ -148,6 +161,7 @@ public class ClientHandler implements Runnable {
             proxyObjectOutputStream.writeObject(response);
             proxyObjectOutputStream.flush();
         } else {
+            logger.error("방이 존재하지 않습니다: roomCode={}", code);
             String errorMessage = "방이 존재하지 않습니다.";
             ErrorResponse response = new ErrorResponse(playerName, errorMessage);
             proxyObjectOutputStream.writeObject(response);
