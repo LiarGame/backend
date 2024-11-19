@@ -1,10 +1,14 @@
 package com.liargame.backend.tcpserver;
 
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.ArrayList;
 import java.util.List;
 
 public class GameRoom {
+    private static final Logger logger = LoggerFactory.getLogger(GameRoom.class);
     private final String roomCode;
     private final List<String> players;
     private final GameController gameController;
@@ -17,15 +21,14 @@ public class GameRoom {
     }
 
     public void addPlayer(String playerName) {
+        logger.info("플레이어가 방에 참여했습니다: playerName={}", playerName);
         synchronized (players) {
             players.add(playerName);
         }
     }
 
     public synchronized List<String> getPlayers() {
-        synchronized (players) {
-            return players;
-        }
+        return new ArrayList<>(players);
     }
 
     public GameController getGameController() {
@@ -36,11 +39,11 @@ public class GameRoom {
         return roomCode;
     }
 
-    public int getSpeakCount() {
+    public synchronized int getSpeakCount() {
         return speakCount;
     }
 
-    public void incrementSpeakCount() {
+    public synchronized void incrementSpeakCount() {
         speakCount++;
     }
 }
