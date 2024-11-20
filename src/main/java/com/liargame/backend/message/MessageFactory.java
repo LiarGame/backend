@@ -3,6 +3,7 @@ package com.liargame.backend.message;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.liargame.backend.message.game.RoleAssignResponse;
+import com.liargame.backend.message.game.SpeakRequest;
 import com.liargame.backend.message.game.StartGameRequest;
 import com.liargame.backend.message.room.CreateRoomRequest;
 import com.liargame.backend.message.room.CreateRoomResponse;
@@ -54,8 +55,14 @@ public class MessageFactory {
                     String roomCode = rootNode.path("roomCode").asText();
                     return new RoleAssignResponse(liar, topic, word, roomCode);
                 }
+                case "SPEAK_REQUEST" -> {
+                    String playerName = rootNode.path("playerName").asText();
+                    String roomCode = rootNode.path("roomCode").asText();
+                    String message = rootNode.path("message").asText();
+                    return new SpeakRequest(playerName, message, roomCode);
+                }
                 default -> {
-                    throw new IllegalArgumentException("Unknown message type: " + type);
+                    throw new IllegalArgumentException("정의되지 않은 메시지 타입: " + type);
                 }
 
             }
