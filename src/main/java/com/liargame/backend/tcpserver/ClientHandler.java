@@ -2,6 +2,7 @@ package com.liargame.backend.tcpserver;
 
 import com.liargame.backend.message.*;
 import com.liargame.backend.message.base.ErrorResponse;
+import com.liargame.backend.message.game.DiscussMessageRequest;
 import com.liargame.backend.message.game.SpeakRequest;
 import com.liargame.backend.message.game.StartGameRequest;
 import com.liargame.backend.message.room.CreateRoomRequest;
@@ -43,6 +44,7 @@ public class ClientHandler implements Runnable {
                     case "JOIN_REQUEST" -> handleJoinRequest((JoinRequest) request);
                     case "START_GAME_REQUEST" -> handleStartGame((StartGameRequest) request);
                     case "SPEAK_REQUEST" -> handleSpeakTurn((SpeakRequest) request);
+                    case "DISCUSS_MESSAGE_REQUEST" -> handleDiscussMessage((DiscussMessageRequest) request);
                 }
             }
         } catch (Exception e) {
@@ -148,7 +150,7 @@ public class ClientHandler implements Runnable {
      * SpeakRequest 요청을 받고, 응답을 반환해주는 method
      */
     private void handleSpeakTurn(SpeakRequest request) throws IOException {
-        logger.info("플레이어 발언 요청 수신: playerName={}", request.getPlayerName());
+        logger.info("플레이어 발언 요청 수신: playerName={}, message={}", request.getPlayerName(), request.getMessage());
         String playerName = request.getPlayerName();
         String message = request.getMessage();
         String code = request.getRoomCode();
@@ -158,6 +160,31 @@ public class ClientHandler implements Runnable {
         }
         if (currentRoom != null) {
             Message response = currentRoom.getGameController().speakTurn(playerName, message);
+            proxyObjectOutputStream.writeObject(response);
+            proxyObjectOutputStream.flush();
+        } else {
+            logger.error("방이 존재하지 않습니다: roomCode={}", code);
+            String errorMessage = "방이 존재하지 않습니다.";
+            ErrorResponse response = new ErrorResponse(playerName, errorMessage);
+            proxyObjectOutputStream.writeObject(response);
+            proxyObjectOutputStream.flush();
+        }
+    }
+
+    /**
+     * DiscussMessageRequest 요청을 받고, 응답을 반환해주는 method
+     */
+    private void handleDiscussMessage(DiscussMessageRequest request) throws IOException {
+        logger.info("플레이어 토론 발언 요청 수신: playerName={}, message={}", request.getPlayerName(), request.getMessage());
+        String playerName = request.getPlayerName();
+        String message = request.getMessage();
+        String code = request.getRoomCode();
+        GameRoom currentRoom;
+        synchronized (gm) {
+            currentRoom = gm.getRoom(code);
+        }
+        if (currentRoom != null) {
+            Message response = currentRoom.getGameController().discuss(playerName, message);
             proxyObjectOutputStream.writeObject(response);
             proxyObjectOutputStream.flush();
         } else {
