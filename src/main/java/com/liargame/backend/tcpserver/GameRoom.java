@@ -6,6 +6,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 public class GameRoom {
     private static final Logger logger = LoggerFactory.getLogger(GameRoom.class);
@@ -13,6 +14,7 @@ public class GameRoom {
     private final List<String> players;
     private final GameController gameController;
     private int speakCount;
+    private Set<String> votedPlayer;
 
     public GameRoom(String roomCode) {
         this.roomCode = roomCode;
@@ -45,5 +47,9 @@ public class GameRoom {
 
     public synchronized void incrementSpeakCount() {
         speakCount++;
+    }
+
+    public Set<String> getVotedPlayer() {
+        return votedPlayer;
     }
 }

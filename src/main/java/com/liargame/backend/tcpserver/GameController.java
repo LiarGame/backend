@@ -95,7 +95,7 @@ public class GameController {
             return new ErrorResponse(voter, errorMessage);
         }
         Set<String> votedPlayer = gameRoom.getVotedPlayer();
-        if (!votedPlayer.add(voter)) {
+        if (!gameRoom.addVotedPlayer(voter)) {
             logger.error("이미 투표를 진행한 플레이어입니다: voter={}", voter);
             String errorMessage = "이미 투표를 진행한 플레이어입니다.";
             return new ErrorResponse(voter, errorMessage);
