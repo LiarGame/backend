@@ -6,13 +6,14 @@ import com.liargame.backend.message.game.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 public class GameController {
     private static final Logger logger = LoggerFactory.getLogger(GameController.class);
     private final GameRoom gameRoom;
     private boolean startFlag;
+    private String liar;
+    private HashMap<String, Integer> numOfVotes;
 
     public GameController(GameRoom gameRoom) {
         this.gameRoom = gameRoom;
@@ -33,7 +34,7 @@ public class GameController {
         }
 
         Collections.shuffle(players);
-        String liar = players.get(0);
+        liar = players.get(0);
         TopicEnum topic = TopicEnum.getRandomTopic();
         String word = topic.getRandomWord();
 
@@ -85,6 +86,37 @@ public class GameController {
         }
         return new VoteStartResponse(code);
     }
+
+    public Message vote(String voter, String suspect) {
+        String code = gameRoom.getRoomCode();
+        if (!startFlag) {
+            logger.error("게임을 진행중인 방이 아닙니다: roomCode={}", code);
+            String errorMessage = "게임을 진행중인 방이 아닙니다.";
+            return new ErrorResponse(voter, errorMessage);
+        }
+        Set<String> votedPlayer = gameRoom.getVotedPlayer();
+        if (!votedPlayer.add(voter)) {
+            logger.error("이미 투표를 진행한 플레이어입니다: voter={}", voter);
+            String errorMessage = "이미 투표를 진행한 플레이어입니다.";
+            return new ErrorResponse(voter, errorMessage);
+        }
+        logger.info("플레이어가 투표를 합니다: voter={}, suspect={}", voter, suspect);
+        numOfVotes.merge(suspect, 1, Integer::sum);
+
+        if (votedPlayer.size() == gameRoom.getPlayers().size()) {
+            logger.info("모든 플레이어가 투표를 했습니다");
+
+            String mostVotedPlayer = numOfVotes.entrySet().stream()
+                    .max(Map.Entry.comparingByValue())
+                    .map(Map.Entry::getKey)
+                    .orElse(null);
+
+            boolean isLiarCaught = mostVotedPlayer != null && mostVotedPlayer.equals(liar);
+            return new VoteResult(isLiarCaught, liar, code);
+        }
+        return new VoteResponse(voter, suspect, code);
+    }
+
     // TODO: startFlag 다시 false로 돌리는 로직 필요
     public void endGame() {
         startFlag = false;
