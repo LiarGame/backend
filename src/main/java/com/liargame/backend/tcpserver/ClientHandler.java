@@ -2,10 +2,7 @@ package com.liargame.backend.tcpserver;
 
 import com.liargame.backend.message.*;
 import com.liargame.backend.message.base.ErrorResponse;
-import com.liargame.backend.message.game.DiscussMessageRequest;
-import com.liargame.backend.message.game.SpeakRequest;
-import com.liargame.backend.message.game.StartGameRequest;
-import com.liargame.backend.message.game.VoteStartRequest;
+import com.liargame.backend.message.game.*;
 import com.liargame.backend.message.room.CreateRoomRequest;
 import com.liargame.backend.message.room.CreateRoomResponse;
 import com.liargame.backend.message.room.JoinRequest;
@@ -47,6 +44,7 @@ public class ClientHandler implements Runnable {
                     case "SPEAK_REQUEST" -> handleSpeakTurn((SpeakRequest) request);
                     case "DISCUSS_MESSAGE_REQUEST" -> handleDiscussMessage((DiscussMessageRequest) request);
                     case "VOTE_START_REQUEST" -> handleVoteStart((VoteStartRequest) request);
+                    case "VOTE_REQUEST" -> handleVoteRequest((VoteRequest) request);
                 }
             }
         } catch (Exception e) {
@@ -217,6 +215,27 @@ public class ClientHandler implements Runnable {
             logger.error("방이 존재하지 않습니다: roomCode={}", code);
             String errorMessage = "방이 존재하지 않습니다.";
             ErrorResponse response = new ErrorResponse(playerName, errorMessage);
+            proxyObjectOutputStream.writeObject(response);
+            proxyObjectOutputStream.flush();
+        }
+    }
+
+    private void handleVoteRequest(VoteRequest request) throws IOException {
+        String voter = request.getVoter();
+        String suspect = request.getSuspect();
+        String code = request.getRoomCode();
+        GameRoom currentRoom;
+        synchronized (gm) {
+            currentRoom = gm.getRoom(code);
+        }
+        if (currentRoom != null) {
+            Message response = currentRoom.getGameController().vote(voter, suspect);
+            proxyObjectOutputStream.writeObject(response);
+            proxyObjectOutputStream.flush();
+        } else {
+            logger.error("방이 존재하지 않습니다: roomCode={}", code);
+            String errorMessage = "방이 존재하지 않습니다.";
+            ErrorResponse response = new ErrorResponse(voter, errorMessage);
             proxyObjectOutputStream.writeObject(response);
             proxyObjectOutputStream.flush();
         }
