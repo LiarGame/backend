@@ -2,6 +2,7 @@ package com.liargame.backend.tcpserver;
 
 import com.liargame.backend.message.base.ErrorResponse;
 import com.liargame.backend.message.Message;
+import com.liargame.backend.message.game.DiscussMessageResponse;
 import com.liargame.backend.message.game.DiscussStartResponse;
 import com.liargame.backend.message.game.RoleAssignResponse;
 import com.liargame.backend.message.game.SpeakResponse;
@@ -65,6 +66,16 @@ public class GameController {
         int currentPlayerAt = players.indexOf(playerName);
         String nextPlayer = currentPlayerAt == players.size() - 1 ? players.get(0) : players.get(currentPlayerAt + 1);
         return new SpeakResponse(playerName, message, nextPlayer);
+    }
+
+    public Message discuss(String playerName, String message) {
+        if (!gameRoom.getPlayers().contains(playerName)) {
+            logger.error("플레이어가 방에 속해있지 않습니다: playerName={}", playerName);
+            String errorMessage = "플레이어가 방에 속해있지 않습니다.";
+            return new ErrorResponse(playerName, errorMessage);
+        }
+        logger.info("플레이어가 토론에서 발언을 합니다: playerName={}, message={}", playerName, message);
+        return new DiscussMessageResponse(playerName, message, gameRoom.getRoomCode());
     }
     // TODO: startFlag 다시 false로 돌리는 로직 필요
     public void endGame() {
