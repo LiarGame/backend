@@ -2,10 +2,7 @@ package com.liargame.backend.tcpserver;
 
 import com.liargame.backend.message.base.ErrorResponse;
 import com.liargame.backend.message.Message;
-import com.liargame.backend.message.game.DiscussMessageResponse;
-import com.liargame.backend.message.game.DiscussStartResponse;
-import com.liargame.backend.message.game.RoleAssignResponse;
-import com.liargame.backend.message.game.SpeakResponse;
+import com.liargame.backend.message.game.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -76,6 +73,17 @@ public class GameController {
         }
         logger.info("플레이어가 토론에서 발언을 합니다: playerName={}, message={}", playerName, message);
         return new DiscussMessageResponse(playerName, message, gameRoom.getRoomCode());
+    }
+
+    public Message startVote(String playerName) {
+        String code = gameRoom.getRoomCode();
+        logger.info("토론이 끝나고 투표를 시작합니다: roomCode={}", code);
+        if (!startFlag) {
+            logger.error("게임을 진행중인 방이 아닙니다: roomCode={}", code);
+            String errorMessage = "게임을 진행중인 방이 아닙니다.";
+            return new ErrorResponse(playerName, errorMessage);
+        }
+        return new VoteStartResponse(code);
     }
     // TODO: startFlag 다시 false로 돌리는 로직 필요
     public void endGame() {
