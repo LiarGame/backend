@@ -5,6 +5,7 @@ import com.liargame.backend.message.base.ErrorResponse;
 import com.liargame.backend.message.game.DiscussMessageRequest;
 import com.liargame.backend.message.game.SpeakRequest;
 import com.liargame.backend.message.game.StartGameRequest;
+import com.liargame.backend.message.game.VoteStartRequest;
 import com.liargame.backend.message.room.CreateRoomRequest;
 import com.liargame.backend.message.room.CreateRoomResponse;
 import com.liargame.backend.message.room.JoinRequest;
@@ -45,6 +46,7 @@ public class ClientHandler implements Runnable {
                     case "START_GAME_REQUEST" -> handleStartGame((StartGameRequest) request);
                     case "SPEAK_REQUEST" -> handleSpeakTurn((SpeakRequest) request);
                     case "DISCUSS_MESSAGE_REQUEST" -> handleDiscussMessage((DiscussMessageRequest) request);
+                    case "VOTE_START_REQUEST" -> handleVoteStart((VoteStartRequest) request);
                 }
             }
         } catch (Exception e) {
@@ -185,6 +187,30 @@ public class ClientHandler implements Runnable {
         }
         if (currentRoom != null) {
             Message response = currentRoom.getGameController().discuss(playerName, message);
+            proxyObjectOutputStream.writeObject(response);
+            proxyObjectOutputStream.flush();
+        } else {
+            logger.error("방이 존재하지 않습니다: roomCode={}", code);
+            String errorMessage = "방이 존재하지 않습니다.";
+            ErrorResponse response = new ErrorResponse(playerName, errorMessage);
+            proxyObjectOutputStream.writeObject(response);
+            proxyObjectOutputStream.flush();
+        }
+    }
+
+    /**
+     * VoteStartRequest 요청을 받고, 응답을 반환해주는 method
+     */
+    private void handleVoteStart(VoteStartRequest request) throws IOException {
+        logger.info("토론이 끝나고, 투표 시작 요청 수신: roomCode={}", request.getRoomCode());
+        String playerName = request.getPlayerName();
+        String code = request.getRoomCode();
+        GameRoom currentRoom;
+        synchronized (gm) {
+            currentRoom = gm.getRoom(code);
+        }
+        if (currentRoom != null) {
+            Message response = currentRoom.getGameController().startVote(playerName);
             proxyObjectOutputStream.writeObject(response);
             proxyObjectOutputStream.flush();
         } else {
