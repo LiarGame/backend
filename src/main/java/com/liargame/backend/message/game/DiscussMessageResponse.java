@@ -2,23 +2,17 @@ package com.liargame.backend.message.game;
 
 import com.liargame.backend.message.Response;
 
-public class SpeakResponse implements Response {
+public class DiscussMessageResponse implements Response {
     private final String action = "BROADCAST";
-    private final String type = "SPEAK_RESPONSE";
+    private final String type = "DISCUSS_MESSAGE_RESPONSE";
     private String playerName;
     private String message;
-    private String nextPlayer;
     private String roomCode;
 
-    public SpeakResponse(String playerName, String message, String nextPlayer, String roomCode) {
+    public DiscussMessageResponse(String playerName, String message, String roomCode) {
         this.playerName = playerName;
         this.message = message;
-        this.nextPlayer = nextPlayer;
         this.roomCode = roomCode;
-    }
-
-    public String getAction() {
-        return action;
     }
 
     public String getPlayerName() {
@@ -29,16 +23,17 @@ public class SpeakResponse implements Response {
         return message;
     }
 
-    public String getNextPlayer() {
-        return nextPlayer;
-    }
-
     public String getRoomCode() {
         return roomCode;
     }
 
     @Override
     public String getType() {
-        return type;
+        return null;
+    }
+
+    @Override
+    public String getAction() {
+        return null;
     }
 }
