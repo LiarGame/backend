@@ -13,19 +13,21 @@ public class GameController {
     private final GameRoom gameRoom;
     private boolean startFlag;
     private String liar;
-    private HashMap<String, Integer> numOfVotes;
+    private final Map<String, Integer> numOfVotes;
 
     public GameController(GameRoom gameRoom) {
         this.gameRoom = gameRoom;
+        this.numOfVotes = new HashMap<>();
     }
 
     public synchronized Message startGame(String playerName) {
-        startFlag = !startFlag;
-        if (!startFlag) {
+        if (startFlag) {
             logger.error("이미 게임이 진행중인 게임방입니다: roomCode={}", gameRoom.getRoomCode());
-            String errorMessage = "이미 게임이 진행중인 게임방입니다.";
-            return new ErrorResponse(playerName, errorMessage);
+            return new ErrorResponse(playerName, "이미 게임이 진행중인 게임방입니다.");
         }
+        startFlag = true;
+        numOfVotes.clear();
+
         List<String> players = gameRoom.getPlayers();
         if (players.size() < 3) {
             logger.error("게임에 참여한 플레이어는 세 명 이상이어야 합니다: players={}", players);
@@ -63,7 +65,7 @@ public class GameController {
         // 현재 발언자의 인덱스 get
         int currentPlayerAt = players.indexOf(playerName);
         String nextPlayer = currentPlayerAt == players.size() - 1 ? players.get(0) : players.get(currentPlayerAt + 1);
-        return new SpeakResponse(playerName, message, nextPlayer);
+        return new SpeakResponse(playerName, message, nextPlayer, gameRoom.getRoomCode());
     }
 
     public Message discuss(String playerName, String message) {
@@ -87,7 +89,7 @@ public class GameController {
         return new VoteStartResponse(code);
     }
 
-    public Message vote(String voter, String suspect) {
+    public synchronized Message vote(String voter, String suspect) {
         String code = gameRoom.getRoomCode();
         if (!startFlag) {
             logger.error("게임을 진행중인 방이 아닙니다: roomCode={}", code);
@@ -112,6 +114,7 @@ public class GameController {
                     .orElse(null);
 
             boolean isLiarCaught = mostVotedPlayer != null && mostVotedPlayer.equals(liar);
+            logger.info("투표 결과: mostVotedPlayer={}, liar={}, isLiarCaught={}", mostVotedPlayer, liar, isLiarCaught);
             return new VoteResult(isLiarCaught, liar, code);
         }
         return new VoteResponse(voter, suspect, code);
@@ -120,5 +123,8 @@ public class GameController {
     // TODO: startFlag 다시 false로 돌리는 로직 필요
     public void endGame() {
         startFlag = false;
+        liar = null;
+        numOfVotes.clear();
+        gameRoom.resetGameRoomState();
     }
 }
