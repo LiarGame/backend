@@ -52,4 +52,8 @@ public class GameRoom {
     public Set<String> getVotedPlayer() {
         return votedPlayer;
     }
+
+    public boolean addVotedPlayer(String playerName) {
+        return votedPlayer.add(playerName);
+    }
 }

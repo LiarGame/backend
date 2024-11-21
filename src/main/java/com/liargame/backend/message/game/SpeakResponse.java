@@ -7,11 +7,13 @@ public class SpeakResponse implements Response {
     private final String type = "SPEAK_RESPONSE";
     private String playerName;
     private String message;
+    private String nextPlayer;
     private String roomCode;
 
-    public SpeakResponse(String playerName, String message, String roomCode) {
+    public SpeakResponse(String playerName, String message, String nextPlayer, String roomCode) {
         this.playerName = playerName;
         this.message = message;
+        this.nextPlayer = nextPlayer;
         this.roomCode = roomCode;
     }
 
@@ -25,6 +27,10 @@ public class SpeakResponse implements Response {
 
     public String getMessage() {
         return message;
+    }
+
+    public String getNextPlayer() {
+        return nextPlayer;
     }
 
     public String getRoomCode() {
