@@ -38,16 +38,6 @@ public class WebSocketServer extends org.java_websocket.server.WebSocketServer {
         // 비동기로 TCP 서버에 메시지 전송
         executorService.submit(() -> {
             try {
-                JSONObject json = new JSONObject(messageJson);
-                String type = json.getString("type");
-                String roomCode = json.optString("roomCode");
-                String playerName = json.optString("playerName");
-
-                if (type.equals("JOIN_REQUEST")) {
-                    WebSocketService.addClient(roomCode, playerName, conn);
-                    logger.info("클라이언트가 방에 참여했습니다: roomCode={}, playerName={}", roomCode, playerName);
-                }
-
                 // TCP 서버에 메시지 전송 및 응답 받기
                 MessageHandler.handleClientMessage(conn, messageJson);
 

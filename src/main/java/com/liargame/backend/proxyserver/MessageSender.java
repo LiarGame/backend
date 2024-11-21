@@ -14,7 +14,7 @@ public class MessageSender {
     public static void sendMessage(WebSocket client, String message) {
         try {
             client.send(message);
-            logger.info("메시지 전송을 완료하였습니다");
+            logger.info("클라이언트에 메시지 전송을 완료하였습니다");
         } catch (Exception e) {
             e.printStackTrace();
         }

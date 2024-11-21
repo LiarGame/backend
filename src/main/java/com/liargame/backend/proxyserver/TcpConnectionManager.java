@@ -32,13 +32,10 @@ public class TcpConnectionManager {
     public static synchronized Response sendMessageAndReceiveResponse(Message message) {
         try {
             // 메시지 전송
-            logger.info("TCP 서버로 메시지를 전송합니다");
             out.writeObject(message);
             out.flush();
-            logger.info("TCP 서버로부터 응답 수신을 기다리고 있습니다...");
             // TCP 서버로부터 응답 수신
             Object responseObject = in.readObject();
-            logger.info("TCP 서버로부터 응답 수신이 완료되었습니다.");
             if (responseObject instanceof Response) {
                 Response response = (Response) responseObject;
                 return response;
