@@ -5,6 +5,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -14,11 +15,12 @@ public class GameRoom {
     private final List<String> players;
     private final GameController gameController;
     private int speakCount;
-    private Set<String> votedPlayer;
+    private final Set<String> votedPlayer;
 
     public GameRoom(String roomCode) {
         this.roomCode = roomCode;
         this.players = new ArrayList<>();
+        this.votedPlayer = new HashSet<>();
         this.gameController = new GameController(this);
     }
 
@@ -54,6 +56,17 @@ public class GameRoom {
     }
 
     public boolean addVotedPlayer(String playerName) {
-        return votedPlayer.add(playerName);
+        synchronized (votedPlayer) {
+            return votedPlayer.add(playerName);
+        }
+    }
+
+    public void resetGameRoomState() {
+        synchronized (votedPlayer) {
+            votedPlayer.clear();
+        }
+        synchronized (this) {
+            speakCount = 0;
+        }
     }
 }
