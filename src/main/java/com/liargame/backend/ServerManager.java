@@ -12,6 +12,7 @@ public class ServerManager {
     private Thread webSocketServerThread;
     private static final Logger logger = LoggerFactory.getLogger(ServerManager.class);
     private final int WEBSOCKET_SERVER_PORT = 8080;
+    private final String WEBSOCKET_SERVER_HOST = "0.0.0.0"; // WebSocket 서버 바인딩 주소
 
     public void startServers() {
         startTcpServer();
@@ -36,7 +37,7 @@ public class ServerManager {
 
     // WebSocket 서버 시작
     private void startWebSocketServer() {
-        webSocketServer = new WebSocketServer(WEBSOCKET_SERVER_PORT);
+        webSocketServer = new WebSocketServer(WEBSOCKET_SERVER_HOST,WEBSOCKET_SERVER_PORT);
         webSocketServerThread = new Thread(() -> {
             try {
                 webSocketServer.start();
