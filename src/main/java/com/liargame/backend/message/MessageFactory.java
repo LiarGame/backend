@@ -2,17 +2,11 @@ package com.liargame.backend.message;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.liargame.backend.message.game.RoleAssignResponse;
 import com.liargame.backend.message.game.SpeakRequest;
 import com.liargame.backend.message.game.StartGameRequest;
 import com.liargame.backend.message.room.CreateRoomRequest;
-import com.liargame.backend.message.room.CreateRoomResponse;
 import com.liargame.backend.message.room.JoinRequest;
-import com.liargame.backend.message.room.JoinResponse;
-import com.liargame.backend.tcpserver.TopicEnum;
 
-import java.util.Collections;
-import java.util.List;
 
 public class MessageFactory {
     private static final ObjectMapper objectMapper = new ObjectMapper();
@@ -23,37 +17,21 @@ public class MessageFactory {
             JsonNode rootNode = objectMapper.readTree(messageJson);
             String type = rootNode.path("type").asText();
 
-            // type에 따라 객체 생성 및 데이터 설정
+            // type에 따라 Request 관련 객체 생성 및 데이터 설정
             switch (type) {
                 case "CREATE_ROOM_REQUEST" -> {
                     String playerName = rootNode.path("playerName").asText();
                     return new CreateRoomRequest(playerName);
-                }
-                case "CREATE_ROOM_RESPONSE" -> {
-                    String roomCode = rootNode.path("roomCode").asText();
-                    return new CreateRoomResponse(type, roomCode);
                 }
                 case "JOIN_REQUEST" -> {
                     String playerName = rootNode.path("playerName").asText();
                     String roomCode = rootNode.path("roomCode").asText();
                     return new JoinRequest(playerName, roomCode);
                 }
-                case "JOIN_RESPONSE" -> {
-                    List<String> playerList = Collections.singletonList(rootNode.path("playerList").asText());
-                    String roomCode = rootNode.path("roomCode").asText();
-                    return new JoinResponse(playerList, roomCode);
-                }
                 case "START_GAME_REQUEST" -> {
                     String playerName = rootNode.path("playerName").asText();
                     String roomCode = rootNode.path("roomCode").asText();
                     return new StartGameRequest(playerName, roomCode);
-                }
-                case "ROLE_ASSIGN_RESPONSE" -> {
-                    String liar = rootNode.path("liar").asText();
-                    TopicEnum topic = TopicEnum.valueOf(rootNode.path("topic").asText());
-                    String word = rootNode.path("word").asText();
-                    String roomCode = rootNode.path("roomCode").asText();
-                    return new RoleAssignResponse(liar, topic, word, roomCode);
                 }
                 case "SPEAK_REQUEST" -> {
                     String playerName = rootNode.path("playerName").asText();
