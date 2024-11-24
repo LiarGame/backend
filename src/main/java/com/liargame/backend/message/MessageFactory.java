@@ -51,10 +51,9 @@ public class MessageFactory {
                 }
                 case "GUESS_REQUEST" -> {
                     String playerName = rootNode.path("playerName").asText();
-                    String message = rootNode.path("message").asText();
                     String roomCode = rootNode.path("roomCode").asText();
                     String guessWord = rootNode.path("guessWord").asText();
-                    return new GuessWordRequest(playerName,message,roomCode,guessWord);
+                    return new GuessWordRequest(playerName, roomCode, guessWord);
                 }
                 default -> {
                     throw new IllegalArgumentException("정의되지 않은 메시지 타입: " + type);
