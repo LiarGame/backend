@@ -12,7 +12,7 @@ public class ServerManager {
     private Thread webSocketServerThread;
     private static final Logger logger = LoggerFactory.getLogger(ServerManager.class);
     private final int WEBSOCKET_SERVER_PORT = 8080;
-    private final String WEBSOCKET_SERVER_HOST = "192.168.0.11"; // WebSocket 서버 바인딩 주소
+    private final String WEBSOCKET_SERVER_HOST = "localhost"; // WebSocket 서버 바인딩 주소
 
     public void startServers() {
         startTcpServer();
