@@ -3,16 +3,18 @@ package com.liargame.backend.message.game;
 import com.liargame.backend.message.Response;
 import com.liargame.backend.tcpserver.TopicEnum;
 
+import java.util.List;
+
 public class GameResultResponse implements Response {
     private final String action = "BROADCAST";
     private final String type = "GAME_RESULT";
-    private String winner;
+    private List<String> winner;
     private String liarName;
     private TopicEnum topic;
     private String word;
     private String roomCode;
 
-    public GameResultResponse(String winner, String liarName, TopicEnum topic, String word, String roomCode) {
+    public GameResultResponse(List<String> winner, String liarName, TopicEnum topic, String word, String roomCode) {
         this.winner = winner;
         this.liarName = liarName;
         this.topic = topic;
@@ -20,7 +22,7 @@ public class GameResultResponse implements Response {
         this.roomCode = roomCode;
     }
 
-    public String getWinner() {
+    public List<String> getWinner() {
         return winner;
     }
 
