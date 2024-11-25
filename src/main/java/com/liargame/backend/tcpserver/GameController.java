@@ -12,7 +12,6 @@ public class GameController {
     private static final Logger logger = LoggerFactory.getLogger(GameController.class);
     private final GameRoom gameRoom;
     private boolean startFlag;
-    private String liar;
     private final Map<String, Integer> numOfVotes;
 
     public GameController(GameRoom gameRoom) {
@@ -36,11 +35,13 @@ public class GameController {
         }
 
         Collections.shuffle(players);
-        liar = players.get(0);
+        String liar = players.get(0);
         TopicEnum topic = TopicEnum.getRandomTopic();
         String word = topic.getRandomWord();
 
-        return new RoleAssignResponse(liar, topic, word, gameRoom.getRoomCode());
+        gameRoom.setGameDetails(liar, topic, word);
+
+        return new RoleAssignResponse(players, liar, topic, word, gameRoom.getRoomCode());
     }
 
     public synchronized Message speakTurn(String playerName, String message) {
@@ -65,7 +66,7 @@ public class GameController {
         // 현재 발언자의 인덱스 get
         int currentPlayerAt = players.indexOf(playerName);
         String nextPlayer = currentPlayerAt == players.size() - 1 ? players.get(0) : players.get(currentPlayerAt + 1);
-        return new SpeakResponse(playerName, message, nextPlayer, gameRoom.getRoomCode());
+        return new SpeakResponse(players, playerName, message, nextPlayer, gameRoom.getRoomCode());
     }
 
     public Message discuss(String playerName, String message) {
@@ -91,6 +92,7 @@ public class GameController {
 
     public synchronized Message vote(String voter, String suspect) {
         String code = gameRoom.getRoomCode();
+        List<String> players = gameRoom.getPlayers();
         if (!startFlag) {
             logger.error("게임을 진행중인 방이 아닙니다: roomCode={}", code);
             String errorMessage = "게임을 진행중인 방이 아닙니다.";
@@ -112,18 +114,48 @@ public class GameController {
                     .max(Map.Entry.comparingByValue())
                     .map(Map.Entry::getKey)
                     .orElse(null);
-
+            String liar = gameRoom.getLiar();
             boolean isLiarCaught = mostVotedPlayer != null && mostVotedPlayer.equals(liar);
+            if (!isLiarCaught) {
+                List<String> playersWithoutLiar = new ArrayList<>(gameRoom.getPlayers());
+                playersWithoutLiar.remove(liar);
+                return new GameResultResponse(playersWithoutLiar, gameRoom.getLiar(), gameRoom.getTopic(), gameRoom.getWord(), code);
+            }
             logger.info("투표 결과: mostVotedPlayer={}, liar={}, isLiarCaught={}", mostVotedPlayer, liar, isLiarCaught);
             return new VoteResult(isLiarCaught, liar, code);
         }
-        return new VoteResponse(voter, suspect, code);
+
+        endGame();
+
+        return new VoteResponse(players, voter, suspect, code);
+    }
+    public Message guess(String playerName, String guessWord) {
+        String code = gameRoom.getRoomCode();
+        if (!startFlag) {
+            logger.error("게임을 진행중인 방이 아닙니다: roomCode={}", code);
+            String errorMessage = "게임을 진행중인 방이 아닙니다.";
+            return new ErrorResponse(playerName, errorMessage);
+        }
+        if (!playerName.equals(gameRoom.getLiar())) {
+            logger.error("라이어가 아닙니다: playerName={}, liar={}", playerName, gameRoom.getLiar());
+            return new ErrorResponse(playerName, "라이어가 아닙니다.");
+        }
+        boolean isGuessCorrect = guessWord.equals(gameRoom.getWord());
+        String liar = gameRoom.getLiar();
+        List<String> playersWithoutLiar = new ArrayList<>(gameRoom.getPlayers());
+        playersWithoutLiar.remove(liar);
+        List<String> winner = isGuessCorrect ? Collections.singletonList(gameRoom.getLiar()) : playersWithoutLiar;
+
+        endGame();
+
+        logger.info("라이어가 단어를 추측했습니다: playerName={}, guessWord={}, isGuessCorrect={}, winner={}",
+                playerName, guessWord, isGuessCorrect, winner);
+
+        return new GameResultResponse(winner, gameRoom.getLiar(), gameRoom.getTopic(), gameRoom.getWord(), code);
     }
 
-    // TODO: startFlag 다시 false로 돌리는 로직 필요
     public void endGame() {
         startFlag = false;
-        liar = null;
         numOfVotes.clear();
         gameRoom.resetGameRoomState();
     }
