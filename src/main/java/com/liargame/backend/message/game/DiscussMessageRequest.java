@@ -28,6 +28,6 @@ public class DiscussMessageRequest implements Message {
 
     @Override
     public String getType() {
-        return null;
+        return type;
     }
 }

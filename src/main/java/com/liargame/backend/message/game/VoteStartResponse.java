@@ -15,10 +15,10 @@ public class VoteStartResponse implements Response {
     }
     @Override
     public String getAction() {
-        return null;
+        return action;
     }
     @Override
     public String getType() {
-        return null;
+        return type;
     }
 }

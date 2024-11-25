@@ -22,6 +22,6 @@ public class VoteStartRequest implements Message {
 
     @Override
     public String getType() {
-        return null;
+        return type;
     }
 }

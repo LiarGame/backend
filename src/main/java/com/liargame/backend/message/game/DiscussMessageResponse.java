@@ -29,11 +29,11 @@ public class DiscussMessageResponse implements Response {
 
     @Override
     public String getType() {
-        return null;
+        return type;
     }
 
     @Override
     public String getAction() {
-        return null;
+        return action;
     }
 }

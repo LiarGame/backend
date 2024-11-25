@@ -58,7 +58,7 @@ public class GameController {
         gameRoom.incrementSpeakCount();
 
         // 모든 플레이어가 두 번씩 발언하면 토론 시작
-        if (speakCount == players.size() * 2) {
+        if (speakCount == players.size() * 2 - 1) {
             logger.info("모든 플레이어가 두 번씩 발언을 진행하고, 토론을 시작합니다.");
             return new DiscussStartResponse(gameRoom.getRoomCode());
         }

@@ -28,6 +28,6 @@ public class VoteRequest implements Message {
 
     @Override
     public String getType() {
-        return null;
+        return type;
     }
 }
