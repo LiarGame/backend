@@ -45,6 +45,7 @@ public class ClientHandler implements Runnable {
                     case "DISCUSS_MESSAGE_REQUEST" -> handleDiscussMessage((DiscussMessageRequest) request);
                     case "VOTE_START_REQUEST" -> handleVoteStart((VoteStartRequest) request);
                     case "VOTE_REQUEST" -> handleVoteRequest((VoteRequest) request);
+                    case "GUESS_WORD_REQUEST" -> handleGuessWordRequest((GuessWordRequest) request);
                 }
             }
         } catch (Exception e) {
@@ -72,13 +73,13 @@ public class ClientHandler implements Runnable {
             roomCode = gm.createRoom();
             currentRoom = gm.getRoom(roomCode);
         }
-
+        List<String> players = currentRoom.getPlayers();
         if (currentRoom != null) {
             synchronized (currentRoom) {
                 currentRoom.addPlayer(playerName);
             }
         }
-        CreateRoomResponse response = new CreateRoomResponse(playerName, roomCode);
+        CreateRoomResponse response = new CreateRoomResponse(players, playerName, roomCode);
         proxyObjectOutputStream.writeObject(response);
         proxyObjectOutputStream.flush();
     }
@@ -110,7 +111,7 @@ public class ClientHandler implements Runnable {
                 currentRoom.addPlayer(playerName);
                 players = currentRoom.getPlayers();
             }
-            JoinResponse response = new JoinResponse(players, code);
+            JoinResponse response = new JoinResponse(players, playerName, code);
             proxyObjectOutputStream.writeObject(response);
             proxyObjectOutputStream.flush();
         } else {
@@ -236,6 +237,27 @@ public class ClientHandler implements Runnable {
             logger.error("방이 존재하지 않습니다: roomCode={}", code);
             String errorMessage = "방이 존재하지 않습니다.";
             ErrorResponse response = new ErrorResponse(voter, errorMessage);
+            proxyObjectOutputStream.writeObject(response);
+            proxyObjectOutputStream.flush();
+        }
+    }
+
+    private void handleGuessWordRequest(GuessWordRequest request) throws IOException {
+        String playerName = request.getPlayerName();
+        String guessWord = request.getGuessWord();
+        String code = request.getRoomCode();
+        GameRoom currentRoom;
+        synchronized (gm) {
+            currentRoom = gm.getRoom(code);
+        }
+        if (currentRoom != null) {
+            Message response = currentRoom.getGameController().guess(playerName, guessWord);
+            proxyObjectOutputStream.writeObject(response);
+            proxyObjectOutputStream.flush();
+        } else {
+            logger.error("방이 존재하지 않습니다: roomCode={}", code);
+            String errorMessage = "방이 존재하지 않습니다.";
+            ErrorResponse response = new ErrorResponse(playerName, errorMessage);
             proxyObjectOutputStream.writeObject(response);
             proxyObjectOutputStream.flush();
         }

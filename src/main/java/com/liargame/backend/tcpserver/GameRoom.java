@@ -16,6 +16,9 @@ public class GameRoom {
     private final GameController gameController;
     private int speakCount;
     private final Set<String> votedPlayer;
+    private String liar;
+    private TopicEnum topic;
+    private String word;
 
     public GameRoom(String roomCode) {
         this.roomCode = roomCode;
@@ -29,6 +32,24 @@ public class GameRoom {
         synchronized (players) {
             players.add(playerName);
         }
+    }
+
+    public synchronized void setGameDetails(String liar, TopicEnum topic, String word) {
+        this.liar = liar;
+        this.topic = topic;
+        this.word = word;
+    }
+
+    public synchronized String getLiar() {
+        return liar;
+    }
+
+    public synchronized TopicEnum getTopic() {
+        return topic;
+    }
+
+    public synchronized String getWord() {
+        return word;
     }
 
     public synchronized List<String> getPlayers() {
@@ -61,12 +82,11 @@ public class GameRoom {
         }
     }
 
-    public void resetGameRoomState() {
-        synchronized (votedPlayer) {
-            votedPlayer.clear();
-        }
-        synchronized (this) {
-            speakCount = 0;
-        }
+    public synchronized void resetGameRoomState() {
+        votedPlayer.clear();
+        speakCount = 0;
+        liar = null;
+        topic = null;
+        word = null;
     }
 }
