@@ -1,5 +1,7 @@
 package com.liargame.backend;
 
+import com.liargame.backend.config.Config;
+import com.liargame.backend.config.ConfigLoader;
 import com.liargame.backend.tcpserver.TcpServer;
 import com.liargame.backend.proxyserver.WebSocketServer;
 import org.slf4j.Logger;
@@ -11,8 +13,12 @@ public class ServerManager {
     private Thread tcpServerThread;
     private Thread webSocketServerThread;
     private static final Logger logger = LoggerFactory.getLogger(ServerManager.class);
-    private final int WEBSOCKET_SERVER_PORT = 8080;
-    private final String WEBSOCKET_SERVER_HOST = "localhost"; // WebSocket 서버 바인딩 주소
+    private Config config;
+
+    public ServerManager() {
+        // JSON 파일에서 설정 로드
+        config = ConfigLoader.loadConfig("config.json");
+    }
 
     public void startServers() {
         startTcpServer();
@@ -37,7 +43,10 @@ public class ServerManager {
 
     // WebSocket 서버 시작
     private void startWebSocketServer() {
-        webSocketServer = new WebSocketServer(WEBSOCKET_SERVER_HOST,WEBSOCKET_SERVER_PORT);
+        String host = config.getWebsocket().getHost();
+        int port = config.getWebsocket().getPort();
+        logger.info("서버 ip 주소 : " + host + ":" + port);
+        webSocketServer = new WebSocketServer(host, port);
         webSocketServerThread = new Thread(() -> {
             try {
                 webSocketServer.start();
@@ -47,7 +56,6 @@ public class ServerManager {
         });
         webSocketServerThread.setName("WebSocket-Server-Thread");
         webSocketServerThread.start();
-        logger.info("WebSocket 서버가 포트 {}에서 시작되었습니다.", WEBSOCKET_SERVER_PORT);
     }
 
     // 서버 종료 처리
