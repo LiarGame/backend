@@ -18,10 +18,10 @@ public class WebSocketServer extends org.java_websocket.server.WebSocketServer {
     private final int TCP_PORT = 10001;
     private final ExecutorService executorService = Executors.newCachedThreadPool();
 
-    public WebSocketServer(String host, int port) {
+    public WebSocketServer(String host, int port, String tcpHost, int tcpPort) {
         super(new InetSocketAddress(host, port)); // 호스트와 포트를 명시적으로 설정
         try {
-            TcpConnectionManager.initializeConnection("localhost", TCP_PORT);
+            TcpConnectionManager.initializeConnection(tcpHost, tcpPort);
             logger.info("웹소켓 서버에서 TCP 서버와의 연결이 초기화되었습니다.");
         } catch (IOException e) {
             logger.error("TCP 서버와의 연결 초기화 중 오류 발생", e);

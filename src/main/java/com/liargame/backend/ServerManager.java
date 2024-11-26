@@ -43,10 +43,14 @@ public class ServerManager {
 
     // WebSocket 서버 시작
     private void startWebSocketServer() {
-        String host = config.getWebsocket().getHost();
-        int port = config.getWebsocket().getPort();
-        logger.info("서버 ip 주소 : " + host + ":" + port);
-        webSocketServer = new WebSocketServer(host, port);
+        String webSocketHost = config.getWebsocket().getHost();
+        int webSocketport = config.getWebsocket().getPort();
+        String tcpHost = config.getTcp().getHost();
+        int tcpPort = config.getTcp().getPort();
+        logger.info("웹 소켓 서버 ip 주소 및 포트 : " + webSocketHost + ":" + webSocketport);
+        logger.info("tcp 서버 ip 주소 및 포트 : " + tcpHost + ":" + tcpPort);
+
+        webSocketServer = new WebSocketServer(webSocketHost, webSocketport, tcpHost, tcpPort);
         webSocketServerThread = new Thread(() -> {
             try {
                 webSocketServer.start();
