@@ -43,6 +43,11 @@ public class MessageFactory {
                     String message = rootNode.path("message").asText();
                     return new DiscussMessageRequest(playerName, message, roomCode);
                 }
+                case "VOTE_START_REQUEST" -> {
+                    String playerName = rootNode.path("playerName").asText();
+                    String roomCode = rootNode.path("roomCode").asText();
+                    return new VoteStartRequest(playerName, roomCode);
+                }
                 case "VOTE_REQUEST" -> {
                     String voter = rootNode.path("voter").asText();
                     String suspect = rootNode.path("suspect").asText();
