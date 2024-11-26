@@ -1,6 +1,6 @@
 {
   "websocket": {
-    "host": "192.168.87.136",
+    "host": "localhost",
     "port": 8080
   },
   "tcp": {
