@@ -69,14 +69,15 @@ public class ClientHandler implements Runnable {
         String playerName = request.getPlayerName();
         String roomCode;
         GameRoom currentRoom;
+        List<String> players = null;
         synchronized (gm) {
             roomCode = gm.createRoom();
             currentRoom = gm.getRoom(roomCode);
         }
-        List<String> players = currentRoom.getPlayers();
         if (currentRoom != null) {
             synchronized (currentRoom) {
                 currentRoom.addPlayer(playerName);
+                players = currentRoom.getPlayers();
             }
         }
         CreateRoomResponse response = new CreateRoomResponse(players, playerName, roomCode);
