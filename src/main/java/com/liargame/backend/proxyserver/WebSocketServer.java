@@ -15,7 +15,6 @@ import java.util.concurrent.Executors;
 
 public class WebSocketServer extends org.java_websocket.server.WebSocketServer {
     private static final Logger logger = LoggerFactory.getLogger(WebSocketServer.class);
-    private final int TCP_PORT = 10001;
     private final ExecutorService executorService = Executors.newCachedThreadPool();
 
     public WebSocketServer(String host, int port, String tcpHost, int tcpPort) {
@@ -51,7 +50,6 @@ public class WebSocketServer extends org.java_websocket.server.WebSocketServer {
     @Override
     public void onClose(WebSocket conn, int code, String reason, boolean remote) {
         logger.info("웹 소켓 서버에서 클라이언트 연결이 종료되었습니다. 이유: {}", reason);
-        WebSocketService.removeClient(conn); // 연결 객체 기준으로 클라이언트 제거
     }
 
     @Override
