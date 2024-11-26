@@ -52,21 +52,20 @@ public class GameController {
         String expectedPlayer = players.get(speakCount % players.size());
         if (!expectedPlayer.equals(playerName)) {
             logger.error("현재 발언할 순서가 아닙니다: playerName={}", playerName);
-            String errorMessage = "현재 발언할 순서가 아닙니다.";
-            return new ErrorResponse(playerName, errorMessage);
+            return new ErrorResponse(playerName, "현재 발언할 순서가 아닙니다.");
         }
         gameRoom.incrementSpeakCount();
+        int updatedSpeakCount = gameRoom.getSpeakCount();
 
-        // 모든 플레이어가 두 번씩 발언하면 토론 시작
-        if (speakCount == players.size() * 2 - 1) {
-            logger.info("모든 플레이어가 두 번씩 발언을 진행하고, 토론을 시작합니다.");
-            return new DiscussStartResponse(gameRoom.getRoomCode());
-        }
-
-        // 현재 발언자의 인덱스 get
         int currentPlayerAt = players.indexOf(playerName);
         String nextPlayer = currentPlayerAt == players.size() - 1 ? players.get(0) : players.get(currentPlayerAt + 1);
-        return new SpeakResponse(players, playerName, message, nextPlayer, gameRoom.getRoomCode());
+        SpeakResponse speakResponse = new SpeakResponse(players, playerName, message, nextPlayer, gameRoom.getRoomCode(), false);
+
+        if (updatedSpeakCount == players.size() * 2) {
+            logger.info("모든 플레이어가 두 번씩 발언을 완료했습니다. 토론을 시작합니다.");
+            speakResponse = new SpeakResponse(players, playerName, message, nextPlayer, gameRoom.getRoomCode(), true);
+        }
+        return speakResponse;
     }
 
     public Message discuss(String playerName, String message) {
@@ -152,6 +151,11 @@ public class GameController {
                 playerName, guessWord, isGuessCorrect, winner);
 
         return new GameResultResponse(winner, gameRoom.getLiar(), gameRoom.getTopic(), gameRoom.getWord(), code);
+    }
+
+    public boolean isAllPlayersSpokeTwice() {
+        List<String> players = gameRoom.getPlayers();
+        return gameRoom.getSpeakCount() >= players.size() * 2;
     }
 
     public void endGame() {

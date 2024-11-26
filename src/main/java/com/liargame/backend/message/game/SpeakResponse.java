@@ -12,13 +12,15 @@ public class SpeakResponse implements Response {
     private String message;
     private String nextPlayer;
     private String roomCode;
+    private Boolean startDiscussFlag;
 
-    public SpeakResponse(List<String> playerList, String speakingPlayer, String message, String nextPlayer, String roomCode) {
+    public SpeakResponse(List<String> playerList, String speakingPlayer, String message, String nextPlayer, String roomCode, Boolean startDiscussFlag) {
         this.playerList = playerList;
         this.speakingPlayer = speakingPlayer;
         this.message = message;
         this.nextPlayer = nextPlayer;
         this.roomCode = roomCode;
+        this.startDiscussFlag = startDiscussFlag;
     }
 
     public String getAction() {
@@ -43,6 +45,10 @@ public class SpeakResponse implements Response {
 
     public String getRoomCode() {
         return roomCode;
+    }
+
+    public Boolean getStartDiscussFlag() {
+        return startDiscussFlag;
     }
 
     @Override
