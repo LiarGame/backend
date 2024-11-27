@@ -10,6 +10,8 @@ import org.slf4j.LoggerFactory;
 
 import java.net.InetSocketAddress;
 import java.io.IOException;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -30,7 +32,23 @@ public class WebSocketServer extends org.java_websocket.server.WebSocketServer {
     @Override
     public void onOpen(WebSocket conn, ClientHandshake handshake) {
         logger.info("웹소켓 서버와 클라이언트와의 새 연결이 시작되었습니다.");
+        try {
+            // ClientHandshake에서 roomCode와 playerName을 추출 (예: HTTP 헤더 또는 URI 쿼리 파라미터로 전송)
+            String query = handshake.getResourceDescriptor(); // 예: /?roomCode=123&playerName=John
+            Map<String, String> params = parseQueryParams(query);
+            String roomCode = params.get("roomCode");
+            String playerName = params.get("playerName");
+
+            if (roomCode != null && playerName != null) {
+                WebSocketService.addClient(roomCode, playerName, conn);
+                logger.info("클라이언트가 방 {}에 추가되었습니다. 사용자 이름: {}", roomCode, playerName);
+            }
+        } catch (Exception e) {
+            logger.error("onOpen 처리 중 오류 발생", e);
+            conn.close(1011, "서버 오류 발생");
+        }
     }
+
 
     @Override
     public void onMessage(WebSocket conn, String messageJson) {
@@ -49,12 +67,17 @@ public class WebSocketServer extends org.java_websocket.server.WebSocketServer {
 
     @Override
     public void onClose(WebSocket conn, int code, String reason, boolean remote) {
-        logger.info("웹 소켓 서버에서 클라이언트 연결이 종료되었습니다. 이유: {}", reason);
+        logger.info("웹소켓 연결이 종료되었습니다. 코드: {}, 이유: {}, 원격 종료 여부: {}", code, reason, remote);
+        WebSocketService.removeClient(conn); // 연결 객체 기준으로 클라이언트 제거
     }
 
     @Override
     public void onError(WebSocket conn, Exception ex) {
-        logger.error("웹 소켓 서버에서 오류 발생", ex);
+        if (conn != null) {
+            logger.error("웹 소켓 서버에서 오류 발생. 클라이언트 주소: {}, ID: {}", conn.getRemoteSocketAddress(), conn.hashCode(), ex);
+        } else {
+            logger.error("웹 소켓 서버에서 연결되지 않은 클라이언트 오류 발생", ex);
+        }
     }
 
     @Override
@@ -62,13 +85,21 @@ public class WebSocketServer extends org.java_websocket.server.WebSocketServer {
         logger.info("웹 소켓 서버가 시작되었습니다.");
     }
 
-    public void stopServer() {
-        try {
-            this.stop();
-            TcpConnectionManager.closeConnection();
-            logger.info("웹 소켓 서버에서 TCP 서버와의 연결이 정상적으로 종료되었습니다.");
-        } catch (Exception e) {
-            logger.error("서버 종료 중 오류 발생", e);
+
+    /**
+     * 쿼리 문자열을 파싱하여 Map으로 반환하는 유틸리티 메서드
+     */
+    private Map<String, String> parseQueryParams(String query) {
+        Map<String, String> params = new ConcurrentHashMap<>();
+        if (query != null && query.startsWith("/?")) {
+            query = query.substring(2); // "/?" 제거
+            for (String param : query.split("&")) {
+                String[] keyValue = param.split("=");
+                if (keyValue.length == 2) {
+                    params.put(keyValue[0], keyValue[1]);
+                }
+            }
         }
+        return params;
     }
 }

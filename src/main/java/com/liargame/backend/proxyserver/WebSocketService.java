@@ -5,7 +5,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class WebSocketService {
@@ -17,16 +16,6 @@ public class WebSocketService {
         logger.info("방 {}에 사용자 {} 추가됨.", roomCode, playerName);
     }
 
-    public static void removeClient(String roomCode, String playerName) {
-        Map<String, WebSocket> room = rooms.get(roomCode);
-        if (room != null) {
-            room.remove(playerName);
-            if (room.isEmpty()) {
-                rooms.remove(roomCode);
-                logger.info("방 {}이 비어 있어 삭제됨.", roomCode);
-            }
-        }
-    }
 
     // WebSocket 객체로 클라이언트 제거
     public static void removeClient(WebSocket conn) {
