@@ -38,6 +38,7 @@ public class WebSocketServer extends org.java_websocket.server.WebSocketServer {
             Map<String, String> params = parseQueryParams(query);
             String roomCode = params.get("roomCode");
             String playerName = params.get("playerName");
+            logger.info("클라이언트로부터 open 메세지가 도착하였습니다 : 방 {} / 사용자 이름: {}", roomCode, playerName);
 
             if (roomCode != null && playerName != null) {
                 WebSocketService.addClient(roomCode, playerName, conn);

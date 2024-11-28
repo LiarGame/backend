@@ -8,7 +8,7 @@ import java.util.Collection;
 import java.util.Set;
 
 public class MessageSender {
-    private static final Logger logger = LoggerFactory.getLogger(MessageHandler.class);
+    private static final Logger logger = LoggerFactory.getLogger(MessageSender.class);
 
     // 메시지를 클라이언트에게 전송하는 메서드
     public static void sendMessage(WebSocket client, String message) {

@@ -37,7 +37,7 @@ public class WebSocketService {
                 // 연결 객체가 발견되면 제거
                 if (playerName != null) {
                     room.remove(playerName);
-                    logger.info("방 {}에서 사용자 {} 제거됨 (연결 객체 기준).", roomCode, playerName);
+                    logger.info("방 {}에서 사용자 {} 제거됨", roomCode, playerName);
 
                     // 방이 비어 있으면 삭제
                     if (room.isEmpty()) {
