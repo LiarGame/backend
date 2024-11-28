@@ -32,22 +32,6 @@ public class WebSocketServer extends org.java_websocket.server.WebSocketServer {
     @Override
     public void onOpen(WebSocket conn, ClientHandshake handshake) {
         logger.info("웹소켓 서버와 클라이언트와의 새 연결이 시작되었습니다.");
-        try {
-            // ClientHandshake에서 roomCode와 playerName을 추출 (예: HTTP 헤더 또는 URI 쿼리 파라미터로 전송)
-            String query = handshake.getResourceDescriptor(); // 예: /?roomCode=123&playerName=John
-            Map<String, String> params = parseQueryParams(query);
-            String roomCode = params.get("roomCode");
-            String playerName = params.get("playerName");
-            logger.info("클라이언트로부터 open 메세지가 도착하였습니다 : 방 {} / 사용자 이름: {}", roomCode, playerName);
-
-            if (roomCode != null && playerName != null) {
-                WebSocketService.addClient(roomCode, playerName, conn);
-                logger.info("클라이언트가 방 {}에 추가되었습니다. 사용자 이름: {}", roomCode, playerName);
-            }
-        } catch (Exception e) {
-            logger.error("onOpen 처리 중 오류 발생", e);
-            conn.close(1011, "서버 오류 발생");
-        }
     }
 
 
