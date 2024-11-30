@@ -69,22 +69,4 @@ public class WebSocketServer extends org.java_websocket.server.WebSocketServer {
     public void onStart() {
         logger.info("웹 소켓 서버가 시작되었습니다.");
     }
-
-
-    /**
-     * 쿼리 문자열을 파싱하여 Map으로 반환하는 유틸리티 메서드
-     */
-    private Map<String, String> parseQueryParams(String query) {
-        Map<String, String> params = new ConcurrentHashMap<>();
-        if (query != null && query.startsWith("/?")) {
-            query = query.substring(2); // "/?" 제거
-            for (String param : query.split("&")) {
-                String[] keyValue = param.split("=");
-                if (keyValue.length == 2) {
-                    params.put(keyValue[0], keyValue[1]);
-                }
-            }
-        }
-        return params;
-    }
 }
