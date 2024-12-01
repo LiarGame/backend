@@ -25,7 +25,7 @@ public class MessageHandler {
     public static void handleClientMessage(WebSocket client, String clientMessage) {
         executorService.submit(() -> {
             try {
-                logger.info("클라이언트에서 메시지가 도착하였습니다 : "+clientMessage);
+                logger.info("클라이언트에서 메시지가 도착하였습니다 : " + clientMessage);
 
                 // 메시지 파싱
                 JSONObject clientMessageJson = new JSONObject(clientMessage);
@@ -33,8 +33,10 @@ public class MessageHandler {
                 String roomCode = clientMessageJson.optString("roomCode");
                 String playerName = clientMessageJson.optString("playerName");
 
-                // JOIN_REQUEST 처리
-                if (clientMessageType.equals(TYPE_JOIN_REQUEST)) {
+                if (clientMessageType.equals("RECONNECT_REQUEST")) {
+                    WebSocketService.addClient(roomCode, playerName, client);
+                    return;
+                } else if (clientMessageType.equals(TYPE_JOIN_REQUEST)) {
                     handleJoinRequest(client, roomCode, playerName);
                 }
 
@@ -113,6 +115,7 @@ public class MessageHandler {
 
         logger.info("roomCode={}에 메시지를 브로드캐스트합니다.", roomCode);
         WebSocketService.broadcastMessage(roomCode, messageJson);
+
     }
 
     private static void handleUnicastMessage(String roomCode, JSONObject json) {
