@@ -1,4 +1,4 @@
-const worker = new SharedWorker("worker.js");
+const worker = new SharedWorker("../html/worker.js");
 worker.port.start();
 
 window.isHost = false; // 방장 여부
@@ -7,19 +7,24 @@ let roomCode = 12345; // 임시 방 코드
 window.isFinal = false; // 최종 답 제출 여부
 
 document.addEventListener("DOMContentLoaded", () => {
-  // 페이지 경로 확인
   const currentPath = window.location.pathname;
+  let player = [];
 
-  // 특정 페이지에서만 renderList 호출
+  // sessionStorage에 playerList가 존재하면 이를 사용
+  const playerList = sessionStorage.getItem("playerList");
+  if (playerList) {
+    player = JSON.parse(playerList);
+  } else {
+    console.warn("playerList가 sessionStorage에 없습니다.");
+  }
+
   if (currentPath.includes("html/invite.html")) {
-    let player = [];
-    player = JSON.parse(sessionStorage.getItem("playerList"));
-    renderPlayerList(player);
+    renderPlayerList(player); // playerList를 제대로 갱신한 후 렌더링
   }
 
   if(isFinal == true){
     const citizenData = sessionStorage.getItem("citizen"); // 시민팀
-    const liarName = sessionStorage.getItem("liarName"); // 라이어 
+    const liarName = sessionStorage.getItem("liarName"); // 라이어
     const keyword = sessionStorage.getItem("keyword"); // 제시어
 
     const citizenList = JSON.parse(citizenData); // 저장된 시민 데이터가 JSON 배열이라고 가정
@@ -43,15 +48,29 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 });
 let lastMessage = null; //같은 SPEAK_RESPONSE가 중복 출력되지 않게 하기 위함
+let lastSpeakingPlayer = null;
 worker.port.onmessage = (event) => {
-  // event.data를 JSON으로 파싱
   const message = event.data;
+  console.log(message);
   sessionStorage.setItem("playerList", JSON.stringify(message.playerList));
 
-  // if(message === "Worker connected"){
-  //   console.log("Storage 초기화")
-  //   sessionStorage.clear();
-  // }
+  // Worker가 리로드되었을 때
+  if (message === "Worker Reloaded") {
+    const playerName = sessionStorage.getItem("myPlayer");
+    const roomCode = sessionStorage.getItem("roomCode");
+
+    if (playerName && roomCode) {
+      console.log("재연결 요청");
+      const request = JSON.stringify({
+        type: "RECONNECT_REQUEST",
+        playerName: playerName,
+        roomCode: roomCode
+      });
+
+      worker.port.postMessage(request);
+      return;
+    }
+  }
 
   switch (message.type) {
     case "CREATE_ROOM_RESPONSE":
@@ -80,17 +99,34 @@ worker.port.onmessage = (event) => {
       sessionStorage.setItem("word", message.word);
       if (window.location.pathname.includes("html/invite.html")){
         if(isHost == false)
-          {window.startGame();}
+        {window.startGame();}
+        else{
+          releaseRoleAndKeyword();
+        }
       }
       break;
-
     case "SPEAK_RESPONSE":
+      // 발언 순서 관리
+      const nextPlayer = sessionStorage.getItem("nextPlayer");
+      const voteBtns = document.querySelectorAll(".voteBtn");
+
+      voteBtns.forEach((voteBtn) => {
+        voteBtn.classList.remove("currentSpeakingPlayer");
+        if(nextPlayer === voteBtn.textContent) {
+          voteBtn.classList.add("currentSpeakingPlayer");
+        }
+      });
       if (lastMessage === message.message) {
         //아무것도 안함
       }
       else {
         if(message.startDiscussFlag === true) {
-          Discuss();
+          setTimeout(() => {
+            voteBtns.forEach((voteBtn) => {
+              voteBtn.classList.remove("currentSpeakingPlayer");
+            });
+            Discuss();
+          },10);
         }
         lastMessage = message.message;
         sessionStorage.setItem("speakingPlayer", message.speakingPlayer);
@@ -100,22 +136,18 @@ worker.port.onmessage = (event) => {
       }
       break;
 
-    // 게임 결과화면
+      // 게임 결과화면
     case "GAME_RESULT":
       sessionStorage.setItem("citizen", message.citizen);
       sessionStoragesetItem("liarName", message.liarName);
       isFinal = true;
       if(message.winner == "Citizen"){
         if(window.location.pathname.includes("html/invite.html")){
-          location.href = "html/citizen-win.html";
+          location.href = "../html/citizen-win.html";
         } else{
-          location.href = "html/liar-win.html";
+          location.href = "../html/liar-win.html";
         }
       }
-
-    // case "DISCUSS_START_RESPONSE":
-    //   Discuss();
-    //   break;
 
     case "DISCUSS_MESSAGE_RESPONSE":
       if (lastMessage === message.message) {
@@ -175,7 +207,7 @@ window.sendHost = function (name) {
   if (isHost) {
     console.log(name);
     worker.port.postMessage(
-      JSON.stringify({ type: "CREATE_ROOM_REQUEST", playerName: name })
+        JSON.stringify({ type: "CREATE_ROOM_REQUEST", playerName: name })
     );
     // 영상 녹화용 시간지연
     setTimeout(() => {
@@ -220,13 +252,13 @@ window.renderPlayerList = function (playerList) {
     roomCodeElement.innerHTML = roomCode;
   }
   if (playerList) {
-      playerList.forEach((player) => {
-        const playerElement = document.createElement("button");
-        playerElement.className = "overlap-group111 voteBtn not-selected"; // 여러 클래스 이름 추가
-        playerElement.textContent = player;
+    playerList.forEach((player) => {
+      const playerElement = document.createElement("button");
+      playerElement.className = "overlap-group111 voteBtn not-selected"; // 여러 클래스 이름 추가
+      playerElement.textContent = player;
 
-        userListContainer.appendChild(playerElement);
-      });
+      userListContainer.appendChild(playerElement);
+    });
   } else {
     console.log("저장된 플레이어 리스트가 없습니다.");
   }
@@ -339,14 +371,19 @@ window.releaseRoleAndKeyword = function () {
 // 초대창 -> 게임 시작
 window.startGame = function () {
   if(sessionStorage.getItem("playerList"))
-  setTimeout(() => {}, 500); // 500ms = 0.5초
+    setTimeout(() => {}, 500); // 500ms = 0.5초
   if(isHost){
     console.log("게임 시작 요청을 보내요")
     sendStartGameRequest();
   }
   closeModal();
+
   //제시어 공개
-  releaseRoleAndKeyword();
+  if(!isHost){
+    releaseRoleAndKeyword();
+  }
+
+
 
   console.log("게임이 시작됩니다.");
 };
@@ -358,6 +395,10 @@ window.showChatDisplay = function () {
   if (chatDiv) {
     chatDiv.style.display = "block";
   }
+
+  // 발언 순서 관리
+  const HostVoteBtn = document.querySelector(".voteBtn");
+  HostVoteBtn.classList.add("currentSpeakingPlayer");
 };
 
 window.speakKeyword = function () {
@@ -431,8 +472,8 @@ window.receiveMessage = function () {
     myDiv.classList.add("myMsgDiv");
     const myMsgPTag = document.createElement("p");
     const myNamePTag = document.createElement("p");
-    myDiv.appendChild(myMsgPTag);
     myDiv.appendChild(myNamePTag);
+    myDiv.appendChild(myMsgPTag);
     myMsgPTag.classList.add("myMsg");
     myMsgPTag.innerHTML = `${receivedMessage}`;
     myNamePTag.classList.add("myName");

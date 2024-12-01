@@ -1,6 +1,6 @@
-window. isHost = false; // 방장 여부
+window.isHost = false; // 방장 여부
 
-const worker = new SharedWorker('worker.js');
+const worker = new SharedWorker('../html/worker.js');
 worker.port.start();
 
 window.createRoom = function () {
