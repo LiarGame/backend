@@ -1,0 +1,22 @@
+<configuration>
+    <!-- 콘솔Appender 설정 -->
+    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <!-- 로그 패턴 설정 -->
+        <encoder>
+            <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <!-- 루트 로거 레벨 설정 -->
+    <root level="INFO">
+        <appender-ref ref="STDOUT" />
+    </root>
+
+    <!-- Jetty 로그 레벨 설정 -->
+    <logger name="org.eclipse.jetty" level="INFO" />
+
+    <!-- 필요에 따라 다른 패키지의 로그 레벨 설정 -->
+    <!--
+    <logger name="com.yourcompany" level="INFO" />
+    -->
+</configuration>
