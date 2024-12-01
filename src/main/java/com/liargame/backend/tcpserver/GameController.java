@@ -118,13 +118,12 @@ public class GameController {
             if (!isLiarCaught) {
                 List<String> playersWithoutLiar = new ArrayList<>(gameRoom.getPlayers());
                 playersWithoutLiar.remove(liar);
+                endGame();
                 return new GameResultResponse(playersWithoutLiar, gameRoom.getLiar(), gameRoom.getTopic(), gameRoom.getWord(), code);
             }
             logger.info("투표 결과: mostVotedPlayer={}, liar={}, isLiarCaught={}", mostVotedPlayer, liar, isLiarCaught);
             return new VoteResult(isLiarCaught, liar, code);
         }
-
-        endGame();
 
         return new VoteResponse(players, voter, suspect, code);
     }
@@ -139,6 +138,8 @@ public class GameController {
             logger.error("라이어가 아닙니다: playerName={}, liar={}", playerName, gameRoom.getLiar());
             return new ErrorResponse(playerName, "라이어가 아닙니다.");
         }
+        TopicEnum topic = gameRoom.getTopic();
+        String word = gameRoom.getWord();
         boolean isGuessCorrect = guessWord.equals(gameRoom.getWord());
         String liar = gameRoom.getLiar();
         List<String> playersWithoutLiar = new ArrayList<>(gameRoom.getPlayers());
@@ -150,7 +151,7 @@ public class GameController {
         logger.info("라이어가 단어를 추측했습니다: playerName={}, guessWord={}, isGuessCorrect={}, winner={}",
                 playerName, guessWord, isGuessCorrect, winner);
 
-        return new GameResultResponse(winner, gameRoom.getLiar(), gameRoom.getTopic(), gameRoom.getWord(), code);
+        return new GameResultResponse(winner, liar, topic, word, code);
     }
 
     public boolean isAllPlayersSpokeTwice() {
