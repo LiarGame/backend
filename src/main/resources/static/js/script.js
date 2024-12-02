@@ -107,6 +107,7 @@ worker.port.onmessage = (event) => {
       break;
     case "SPEAK_RESPONSE":
       // 발언 순서 관리
+      sessionStorage.setItem("nextPlayer", message.nextPlayer);
       const nextPlayer = sessionStorage.getItem("nextPlayer");
       const voteBtns = document.querySelectorAll(".voteBtn");
 
@@ -139,15 +140,16 @@ worker.port.onmessage = (event) => {
       // 게임 결과화면
     case "GAME_RESULT":
       sessionStorage.setItem("citizen", message.citizen);
-      sessionStoragesetItem("liarName", message.liarName);
+      sessionStorage.setItem("liarName", message.liarName);
       isFinal = true;
-      if(message.winner == "Citizen"){
+      if (message.winner[0] === message.liarName) {
         if(window.location.pathname.includes("html/invite.html")){
           location.href = "../html/citizen-win.html";
         } else{
           location.href = "../html/liar-win.html";
         }
       }
+      break;
 
     case "DISCUSS_MESSAGE_RESPONSE":
       if (lastMessage === message.message) {
@@ -186,14 +188,12 @@ worker.port.onmessage = (event) => {
           contentDiv.appendChild(voteDiv);
         }
         //fall-through
+        break;
       }
       else {
         //결과 화면 처리
         break;
       }
-    case "GAME_RESULT":
-
-      break;
 
     case "ERROR":
       console.log(message.message);
@@ -582,7 +582,6 @@ window.sendFinalAnswer = function () {
   const request = JSON.stringify({
     type: "GUESS_WORD_REQUEST",
     playerName: myPlayer,
-    message: guessKeywordInput, //이건 뭐지
     roomCode: roomCode,
     guessWord: guessKeywordInput
   });

@@ -54,7 +54,7 @@ public class MessageFactory {
                     String roomCode = rootNode.path("roomCode").asText();
                     return new VoteRequest(voter,suspect,roomCode);
                 }
-                case "GUESS_REQUEST" -> {
+                case "GUESS_WORD_REQUEST" -> {
                     String playerName = rootNode.path("playerName").asText();
                     String roomCode = rootNode.path("roomCode").asText();
                     String guessWord = rootNode.path("guessWord").asText();
