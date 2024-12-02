@@ -119,7 +119,7 @@ public class GameController {
                 List<String> playersWithoutLiar = new ArrayList<>(gameRoom.getPlayers());
                 playersWithoutLiar.remove(liar);
                 endGame();
-                return new GameResultResponse(playersWithoutLiar, gameRoom.getLiar(), gameRoom.getTopic(), gameRoom.getWord(), code);
+                return new GameResultResponse(List.of(liar), playersWithoutLiar, List.of(liar), gameRoom.getTopic(), gameRoom.getWord(), code);
             }
             logger.info("투표 결과: mostVotedPlayer={}, liar={}, isLiarCaught={}", mostVotedPlayer, liar, isLiarCaught);
             return new VoteResult(isLiarCaught, liar, code);
@@ -151,7 +151,7 @@ public class GameController {
         logger.info("라이어가 단어를 추측했습니다: playerName={}, guessWord={}, isGuessCorrect={}, winner={}",
                 playerName, guessWord, isGuessCorrect, winner);
 
-        return new GameResultResponse(winner, liar, topic, word, code);
+        return new GameResultResponse(winner, playersWithoutLiar, List.of(liar), topic, word, code);
     }
 
     public boolean isAllPlayersSpokeTwice() {
