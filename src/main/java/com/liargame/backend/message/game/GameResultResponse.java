@@ -9,13 +9,15 @@ public class GameResultResponse implements Response {
     private final String action = "BROADCAST";
     private final String type = "GAME_RESULT";
     private List<String> winner;
-    private String liarName;
+    private List<String> citizen;
+    private List<String> liarName;
     private TopicEnum topic;
     private String word;
     private String roomCode;
 
-    public GameResultResponse(List<String> winner, String liarName, TopicEnum topic, String word, String roomCode) {
+    public GameResultResponse(List<String> winner, List<String> citizen, List<String> liarName, TopicEnum topic, String word, String roomCode) {
         this.winner = winner;
+        this.citizen = citizen;
         this.liarName = liarName;
         this.topic = topic;
         this.word = word;
@@ -26,7 +28,11 @@ public class GameResultResponse implements Response {
         return winner;
     }
 
-    public String getLiarName() {
+    public List<String> getCitizen() {
+        return citizen;
+    }
+
+    public List<String> getLiarName() {
         return liarName;
     }
 
