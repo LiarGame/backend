@@ -52,7 +52,8 @@ public class WebSocketServer extends org.java_websocket.server.WebSocketServer {
 
     @Override
     public void onClose(WebSocket conn, int code, String reason, boolean remote) {
-        logger.info("웹소켓 연결이 종료되었습니다. 코드: {}, 이유: {}, 원격 종료 여부: {}", code, reason, remote);
+        logger.info("웹소켓 연결이 종료되었습니다. ID: {}, 코드: {}, 이유: {}, 원격 종료 여부: {}",
+                conn.hashCode(), code, reason, remote);
         WebSocketService.removeClient(conn); // 연결 객체 기준으로 클라이언트 제거
     }
 
