@@ -181,7 +181,35 @@ onconnect = (e) => {
             }
         }
 
+        if (type === "CREATE_ROOM_REQUEST") {
+
+            if (socket && socket.readyState === WebSocket.OPEN) {
+                const request = JSON.stringify({
+                    type: "CREATE_ROOM_REQUEST",
+                    playerName: playerName,
+                });
+                socket.send(request);
+            } else {
+                port.postMessage({ error: "WebSocket not connected" });
+            }
+        }
+
+        if (type === "RESTART_ROOM_REQUEST") {
+            const { playerName, roomCode} = JSON.parse(event.data);
+            if (socket && socket.readyState === WebSocket.OPEN) {
+                const request = JSON.stringify({
+                    type: "RESTART_ROOM_REQUEST",
+                    playerName: playerName,
+                    roomCode: roomCode,
+                });
+                socket.send(request);
+            } else {
+                port.postMessage({error: "WebSocket not connected"});
+            }
+        }
     };
+
+
 
     port.onclose = () => {
         connections = connections.filter((conn) => conn !== port);
