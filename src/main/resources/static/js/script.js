@@ -2,30 +2,28 @@ const worker = new SharedWorker("../html/worker.js");
 worker.port.start();
 
 window.isHost = false; // 방장 여부
-sessionStorage.getItem("isHost") === "true" ? (isHost = true) : (isHost = false);
-let roomCode = 12345; // 임시 방 코드
 window.isFinal = false; // 최종 답 제출 여부
+sessionStorage.getItem("isHost") === "true" ? (isHost = true) : (isHost = false);
+sessionStorage.getItem("isFinal") === "true" ? (isFinal = true) : (isFinal = false);
+let roomCode = 12345; // 임시 방 코드
 
 document.addEventListener("DOMContentLoaded", () => {
   const currentPath = window.location.pathname;
-  let player = [];
 
-  // sessionStorage에 playerList가 존재하면 이를 사용
-  const playerList = sessionStorage.getItem("playerList");
-  if (playerList) {
-    player = JSON.parse(playerList);
-  } else {
-    console.warn("playerList가 sessionStorage에 없습니다.");
+  // 특정 페이지에서만 renderList 호출
+  if (currentPath.includes("html/invite.html") && isHost) {
+    renderPlayerList(JSON.parse(sessionStorage.getItem("playerList")));
   }
 
-  if (currentPath.includes("html/invite.html")) {
-    renderPlayerList(player); // playerList를 제대로 갱신한 후 렌더링
+  if (currentPath.includes("html/invite.html") && !isHost) {
+    renderPlayerList(JSON.parse(sessionStorage.getItem("playerList")));
   }
 
-  if(isFinal == true){
+  if(isFinal === true){
+    console.log("안녕하세요?")
     const citizenData = sessionStorage.getItem("citizen"); // 시민팀
     const liarName = sessionStorage.getItem("liarName"); // 라이어
-    const keyword = sessionStorage.getItem("keyword"); // 제시어
+    const keyword = sessionStorage.getItem("word"); // 제시어
 
     const citizenList = JSON.parse(citizenData); // 저장된 시민 데이터가 JSON 배열이라고 가정
     const citizenContainer = document.getElementById("citizen-list");
@@ -76,14 +74,15 @@ worker.port.onmessage = (event) => {
     case "CREATE_ROOM_RESPONSE":
       sessionStorage.setItem("myPlayer", message.playerName);
       sessionStorage.setItem("roomCode", message.roomCode);
-      renderPlayerList(JSON.parse(sessionStorage.getItem("playerList")));
+      sessionStorage.setItem("playerList", JSON.stringify(message.playerList));
       break;
 
     case "JOIN_RESPONSE":
       if (window.location.pathname.includes("html/invite.html")) {
-        const playerList = JSON.parse(sessionStorage.getItem("playerList"));
+        renderPlayerList(message.playerList);
+      } else{
+        sessionStorage.setItem("playerList", JSON.stringify(message.playerList));
         console.log(message.playerList);
-        renderPlayerList(playerList);
       }
       // if (window.location.pathname.includes("html/room-guest.html")) {
       //   const playerList = message.playerList; // 배열이어야 함
@@ -139,15 +138,22 @@ worker.port.onmessage = (event) => {
 
       // 게임 결과화면
     case "GAME_RESULT":
-      sessionStorage.setItem("citizen", message.citizen);
-      sessionStorage.setItem("liarName", message.liarName);
+      console.log("게임 종료 요청이 왔어요");
+      sessionStorage.setItem("citizen", JSON.stringify(message.citizen));
+      sessionStorage.setItem("liarName", message.liarName[0]);
+
       isFinal = true;
-      if (message.winner[0] === message.liarName) {
-        if(window.location.pathname.includes("html/invite.html")){
-          location.href = "../html/citizen-win.html";
-        } else{
-          location.href = "../html/liar-win.html";
-        }
+      sessionStorage.setItem("isFinal", isFinal);
+
+      const liarName = message.liarName[0];
+      const isLiarWinner = message.winner.includes(liarName); // 라이어가 승자 목록에 포함되는지 확인
+
+      if (isLiarWinner) {
+        // 라이어가 이긴 경우
+        location.href = "../html/liar-win.html";
+      } else {
+        // 시민이 이긴 경우
+        location.href = "../html/citizen-win.html";
       }
       break;
 
@@ -418,8 +424,7 @@ window.Discuss = function () {
   secondPTag.classList.add("secondPTagStyle");
   contentDiv.appendChild(secondPTag);
 
-
-  let second = 20;
+  let second = 60;
   const countdown = setInterval(() => {
     secondPTag.textContent = second; // 남은 시간 표시
     second--; // 1초 감소
