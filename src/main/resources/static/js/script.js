@@ -609,14 +609,17 @@ window.sendFinalAnswer = function () {
 };
 
 window.reJoinRoom = function(){
+  isFinal = false;
   isAgain = true;
+  sessionStorage.setItem("isFinal", isFinal);
+  sessionStorage.setItem("isAgain", isAgain);
   const myPlayer = sessionStorage.getItem("myPlayer");
   const roomCode = sessionStorage.getItem("roomCode");
-  const request = {
+  const request = JSON.stringify({
     type: "RESTART_ROOM_REQUEST",
     playerName: myPlayer,
     roomCode: roomCode
-  };
+  });
   worker.port.postMessage(request);
   location.href = 'invite.html'
 }
