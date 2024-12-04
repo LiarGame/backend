@@ -60,6 +60,11 @@ public class MessageFactory {
                     String guessWord = rootNode.path("guessWord").asText();
                     return new GuessWordRequest(playerName, roomCode, guessWord);
                 }
+                case "RESTART_ROOM_REQUEST" -> {
+                    String playerName = rootNode.path("playerName").asText();
+                    String roomCode = rootNode.path("roomCode").asText();
+                    return new RestartRoomRequest(playerName, roomCode);
+                }
                 default -> {
                     throw new IllegalArgumentException("정의되지 않은 메시지 타입: " + type);
                 }

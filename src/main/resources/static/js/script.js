@@ -21,6 +21,10 @@ document.addEventListener("DOMContentLoaded", () => {
     renderPlayerList(JSON.parse(sessionStorage.getItem("playerList")));
   }
 
+  if (currentPath.includes("html/invite.html") && isAgain) {
+    renderPlayerList(JSON.parse(sessionStorage.getItem("playerList")));
+  }
+
   if(isFinal === true){
     console.log("안녕하세요?")
     const citizenData = sessionStorage.getItem("citizen"); // 시민팀
@@ -52,7 +56,6 @@ let lastSpeakingPlayer = null;
 worker.port.onmessage = (event) => {
   const message = event.data;
   console.log(message);
-  sessionStorage.setItem("playerList", JSON.stringify(message.playerList));
 
   // Worker가 리로드되었을 때
   if (message === "Worker Reloaded") {
@@ -74,7 +77,7 @@ worker.port.onmessage = (event) => {
 
   switch (message.type) {
     case "CREATE_ROOM_RESPONSE":
-      sessionStorage.setItem("myPlayer", message.playerName);
+      sessionStorage.setItem("myPlayer", message.playerName + "(0)");
       sessionStorage.setItem("roomCode", message.roomCode);
       sessionStorage.setItem("playerList", JSON.stringify(message.playerList));
       break;
@@ -207,8 +210,12 @@ worker.port.onmessage = (event) => {
       console.log(message.message);
       break;
 
-    case "RESTART_ROOM_REQUEST":
+    case "RESTART_ROOM_RESPONSE":
       sessionStorage.setItem("playerList", JSON.stringify(message.playerList));
+      // 재시작 시 플레이어 리스트를 다시 렌더링
+      if (window.location.pathname.includes("html/invite.html")) {
+        renderPlayerList(message.playerList);
+      }
       break;
 
     default:
@@ -231,7 +238,7 @@ window.sendHost = function (name) {
 
 window.sendGuest = function (name, roomCode) {
   if (!isHost) {
-    sessionStorage.setItem("myPlayer", name); // 플레이어 이름을 로컬 저장소에 저장
+    sessionStorage.setItem("myPlayer", name + "(0)"); // 플레이어 이름을 로컬 저장소에 저장
     sessionStorage.setItem("roomCode", roomCode); // 방 코드를 로컬 저장소에 저장
     const request = JSON.stringify({
       type: "JOIN_REQUEST", // 요청 타입
