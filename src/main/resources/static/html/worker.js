@@ -8,7 +8,7 @@ onconnect = (e) => {
 
     // WebSocket 연결
     if (!socket) {
-        socket = new WebSocket('ws://localhost:8081'); // WebSocket 서버 주소
+        socket = new WebSocket('ws://192.168.232.230:8081'); // WebSocket 서버 주소
         socket.onopen = () => {
 
             // WebSocket이 연결되면 SharedWorker에 연결 상태를 전달
@@ -25,7 +25,7 @@ onconnect = (e) => {
             const roomCode = sessionStorage.getItem("roomCode");
             // 일정 시간 후 재연결
             setTimeout(() => {
-                socket = new WebSocket(`ws://localhost:8081?playerName=${playerName}&roomCode=${roomCode}`);
+                socket = new WebSocket(`ws://192.168.232.230:8081?playerName=${playerName}&roomCode=${roomCode}`);
             }, 2000); // 2초 후 재연결 시도
         };
 
