@@ -1,5 +1,5 @@
 window.isHost = false; // 방장 여부
-
+window.isFinal = true;
 const worker = new SharedWorker('../html/worker.js');
 worker.port.start();
 
@@ -7,6 +7,7 @@ window.createRoom = function () {
   // 전역 함수로 설정
   isHost = true;
   sessionStorage.setItem("isHost", isHost); // isHost 값을 로컬 저장소에 저장
+  sessionStorage.setItem("isFinal", isFinal);
   // 영상 녹화용 시간지연
   setTimeout(() => {
     location.href = "../html/room-host.html"; // 방 만들기 후 페이지 이동
