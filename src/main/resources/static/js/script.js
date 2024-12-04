@@ -6,7 +6,7 @@ window.isFinal = false; // 최종 답 제출 여부
 window.isAgain = false;
 sessionStorage.getItem("isHost") === "true" ? (isHost = true) : (isHost = false);
 sessionStorage.getItem("isFinal") === "true" ? (isFinal = true) : (isFinal = false);
-sessionStorage.getItem("isAgain") === "true" ? (isFinal = true) : (isFinal = false);
+sessionStorage.getItem("isAgain") === "true" ? (isAgain = true) : (isAgain = false);
 let roomCode = 12345; // 임시 방 코드
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -22,7 +22,9 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   if (currentPath.includes("html/invite.html") && isAgain) {
-    renderPlayerList(JSON.parse(sessionStorage.getItem("playerList")));
+    clearGameSessionData(); // 불필요한 세션 데이터 초기화
+    updateMyPlayer(); // 플레이어 명 업데이트
+    renderPlayerList(JSON.parse(sessionStorage.getItem("playerList"))); // 여러 플레이어 이름 랜더링
   }
 
   if(isFinal === true){
@@ -623,3 +625,50 @@ window.reJoinRoom = function(){
   worker.port.postMessage(request);
   location.href = 'invite.html'
 }
+
+// 게임끝나면 초기화 함수
+function clearGameSessionData() {
+  const keysToRemove = [
+    'citizen',
+    'liar',
+    'liarName',
+    'message',
+    'nextPlayer',
+    'speakingPlayer',
+    'topic',
+    'word'
+  ];
+
+  keysToRemove.forEach(key => sessionStorage.removeItem(key));
+
+  console.log('초기화 완료');
+}
+
+// 플레이명 업데이트
+function updateMyPlayer() {
+  // playerList와 myPlayer 값 가져오기
+  let playerList = JSON.parse(sessionStorage.getItem('playerList')); // 배열로 변환
+  let myPlayer = sessionStorage.getItem('myPlayer'); // 현재 myPlayer 값
+
+  // playerList와 myPlayer 값이 유효한지 확인
+  if (!playerList || !myPlayer) {
+    console.log('playerList 또는 myPlayer 값이 없습니다.');
+    return;
+  }
+
+  // myPlayer 이름 추출
+  let myPlayerName = myPlayer.split('(')[0]; // 이름만 추출 (예: "황혜령")
+
+  // playerList에서 이름이 일치하는 항목 찾기
+  let updatedPlayer = playerList.find(player => player.startsWith(myPlayerName));
+
+  if (updatedPlayer) {
+    // myPlayer 값을 업데이트
+    sessionStorage.setItem('myPlayer', updatedPlayer);
+    console.log(`myPlayer가 업데이트되었습니다: ${updatedPlayer}`);
+  } else {
+    console.log('일치하는 플레이어를 찾을 수 없습니다.');
+  }
+
+}
+
