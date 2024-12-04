@@ -3,8 +3,10 @@ worker.port.start();
 
 window.isHost = false; // 방장 여부
 window.isFinal = false; // 최종 답 제출 여부
+window.isAgain = false;
 sessionStorage.getItem("isHost") === "true" ? (isHost = true) : (isHost = false);
 sessionStorage.getItem("isFinal") === "true" ? (isFinal = true) : (isFinal = false);
+sessionStorage.getItem("isAgain") === "true" ? (isFinal = true) : (isFinal = false);
 let roomCode = 12345; // 임시 방 코드
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -203,6 +205,11 @@ worker.port.onmessage = (event) => {
 
     case "ERROR":
       console.log(message.message);
+      break;
+
+    case "RESTART_ROOM_REQUEST":
+      sessionStorage.setItem("playerList", JSON.stringify(message.playerList));
+      break;
 
     default:
       console.log("Unhandled message type:");
@@ -593,3 +600,16 @@ window.sendFinalAnswer = function () {
   console.log(request);
   worker.port.postMessage(request);
 };
+
+window.reJoinRoom = function(){
+  isAgain = true;
+  const myPlayer = sessionStorage.getItem("myPlayer");
+  const roomCode = sessionStorage.getItem("roomCode");
+  const request = {
+    type: "RESTART_ROOM_REQUEST",
+    playerName: myPlayer,
+    roomCode: roomCode
+  };
+  worker.port.postMessage(request);
+  location.href = 'invite.html'
+}
