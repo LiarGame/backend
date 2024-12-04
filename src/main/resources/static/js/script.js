@@ -6,7 +6,7 @@ window.isFinal = false; // 최종 답 제출 여부
 window.isAgain = false;
 sessionStorage.getItem("isHost") === "true" ? (isHost = true) : (isHost = false);
 sessionStorage.getItem("isFinal") === "true" ? (isFinal = true) : (isFinal = false);
-sessionStorage.getItem("isAgain") === "true" ? (isFinal = true) : (isFinal = false);
+sessionStorage.getItem("isAgain") === "true" ? (isAgain = true) : (isAgain = false);
 let roomCode = 12345; // 임시 방 코드
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -211,8 +211,20 @@ worker.port.onmessage = (event) => {
       break;
 
     case "RESTART_ROOM_RESPONSE":
+      // 플레이어 리스트 업데이트
       sessionStorage.setItem("playerList", JSON.stringify(message.playerList));
-      // 재시작 시 플레이어 리스트를 다시 렌더링
+
+      const updatedPlayerList = JSON.parse(sessionStorage.getItem("playerList"));
+      const myPlayerName = sessionStorage.getItem("myPlayer").split("(")[0];
+      const updatedMyPlayer = updatedPlayerList.find(player => player.startsWith(myPlayerName));
+      if (updatedMyPlayer) {
+        sessionStorage.setItem("myPlayer", updatedMyPlayer);
+        console.log("Updated myPlayer:", updatedMyPlayer);
+      } else {
+        console.error("Failed to update myPlayer. Updated player list:", updatedPlayerList);
+      }
+
+      // 렌더링 업데이트
       if (window.location.pathname.includes("html/invite.html")) {
         renderPlayerList(message.playerList);
       }
