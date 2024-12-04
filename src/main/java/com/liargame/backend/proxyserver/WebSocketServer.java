@@ -37,15 +37,24 @@ public class WebSocketServer extends org.java_websocket.server.WebSocketServer {
 
     @Override
     public void onMessage(WebSocket conn, String messageJson) {
-        // 비동기로 TCP 서버에 메시지 전송
         executorService.submit(() -> {
             try {
-                // TCP 서버에 메시지 전송 및 응답 받기
-                MessageHandler.handleClientMessage(conn, messageJson);
+                JSONObject message = new JSONObject(messageJson);
+                String type = message.getString("type");
 
+                if (type.equals("RECONNECT_REQUEST")) {
+                    String playerName = message.getString("playerName");
+                    String roomCode = message.getString("roomCode");
+
+                    // 이미 방에 참여하고 있는 경우, 상태 덮어쓰지 않고 연결만 복구
+                    WebSocketService.addClient(roomCode, playerName, conn);
+                    logger.info("클라이언트 {}가 방 {}에 재참여했습니다.", playerName, roomCode);
+                } else {
+                    MessageHandler.handleClientMessage(conn, messageJson);
+                }
             } catch (Exception e) {
-                logger.error("서버 내부 오류 발생", e);
-                conn.send("{\"type\": \"ERROR\", \"message\": \"서버 내부 오류가 발생했습니다.\"}");
+                logger.error("메시지 처리 중 오류 발생", e);
+                conn.send("{\"type\": \"ERROR\", \"message\": \"서버 오류가 발생했습니다.\"}");
             }
         });
     }
