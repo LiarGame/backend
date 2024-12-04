@@ -7,7 +7,7 @@ import org.eclipse.jetty.servlet.ServletHolder;
 
 public class HttpServer {
     public static void start() throws Exception {
-        Server server = new Server(8080);
+        Server server = new Server(10020);
 
         ServletContextHandler context = new ServletContextHandler(ServletContextHandler.SESSIONS);
         context.setContextPath("/");
