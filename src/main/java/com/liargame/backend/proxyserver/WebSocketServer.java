@@ -1,7 +1,5 @@
 package com.liargame.backend.proxyserver;
 
-import com.liargame.backend.message.Message;
-import com.liargame.backend.message.Response;
 import org.java_websocket.WebSocket;
 import org.java_websocket.handshake.ClientHandshake;
 import org.json.JSONObject;
@@ -10,8 +8,6 @@ import org.slf4j.LoggerFactory;
 
 import java.net.InetSocketAddress;
 import java.io.IOException;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -61,7 +57,8 @@ public class WebSocketServer extends org.java_websocket.server.WebSocketServer {
 
     @Override
     public void onClose(WebSocket conn, int code, String reason, boolean remote) {
-        logger.info("웹소켓 연결이 종료되었습니다. 코드: {}, 이유: {}, 원격 종료 여부: {}", code, reason, remote);
+        logger.info("웹소켓 연결이 종료되었습니다. ID: {}, 코드: {}, 이유: {}, 원격 종료 여부: {}",
+                conn.hashCode(), code, reason, remote);
         WebSocketService.removeClient(conn); // 연결 객체 기준으로 클라이언트 제거
     }
 

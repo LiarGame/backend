@@ -3,8 +3,10 @@ worker.port.start();
 
 window.isHost = false; // 방장 여부
 window.isFinal = false; // 최종 답 제출 여부
+window.isAgain = false;
 sessionStorage.getItem("isHost") === "true" ? (isHost = true) : (isHost = false);
 sessionStorage.getItem("isFinal") === "true" ? (isFinal = true) : (isFinal = false);
+sessionStorage.getItem("isAgain") === "true" ? (isFinal = true) : (isFinal = false);
 let roomCode = 12345; // 임시 방 코드
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -16,6 +18,10 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   if (currentPath.includes("html/invite.html") && !isHost) {
+    renderPlayerList(JSON.parse(sessionStorage.getItem("playerList")));
+  }
+
+  if (currentPath.includes("html/invite.html") && isAgain) {
     renderPlayerList(JSON.parse(sessionStorage.getItem("playerList")));
   }
 
@@ -50,7 +56,6 @@ let lastSpeakingPlayer = null;
 worker.port.onmessage = (event) => {
   const message = event.data;
   console.log(message);
-  sessionStorage.setItem("playerList", JSON.stringify(message.playerList));
 
   // Worker가 리로드되었을 때
   if (message === "Worker Reloaded") {
@@ -72,7 +77,7 @@ worker.port.onmessage = (event) => {
 
   switch (message.type) {
     case "CREATE_ROOM_RESPONSE":
-      sessionStorage.setItem("myPlayer", message.playerName);
+      sessionStorage.setItem("myPlayer", message.playerName + "(0)");
       sessionStorage.setItem("roomCode", message.roomCode);
       sessionStorage.setItem("playerList", JSON.stringify(message.playerList));
       break;
@@ -203,6 +208,15 @@ worker.port.onmessage = (event) => {
 
     case "ERROR":
       console.log(message.message);
+      break;
+
+    case "RESTART_ROOM_RESPONSE":
+      sessionStorage.setItem("playerList", JSON.stringify(message.playerList));
+      // 재시작 시 플레이어 리스트를 다시 렌더링
+      if (window.location.pathname.includes("html/invite.html")) {
+        renderPlayerList(message.playerList);
+      }
+      break;
 
     default:
       console.log("Unhandled message type:");
@@ -224,7 +238,7 @@ window.sendHost = function (name) {
 
 window.sendGuest = function (name, roomCode) {
   if (!isHost) {
-    sessionStorage.setItem("myPlayer", name); // 플레이어 이름을 로컬 저장소에 저장
+    sessionStorage.setItem("myPlayer", name + "(0)"); // 플레이어 이름을 로컬 저장소에 저장
     sessionStorage.setItem("roomCode", roomCode); // 방 코드를 로컬 저장소에 저장
     const request = JSON.stringify({
       type: "JOIN_REQUEST", // 요청 타입
@@ -424,7 +438,7 @@ window.Discuss = function () {
   secondPTag.classList.add("secondPTagStyle");
   contentDiv.appendChild(secondPTag);
 
-  let second = 60;
+  let second = 1;
   const countdown = setInterval(() => {
     secondPTag.textContent = second; // 남은 시간 표시
     second--; // 1초 감소
@@ -593,3 +607,16 @@ window.sendFinalAnswer = function () {
   console.log(request);
   worker.port.postMessage(request);
 };
+
+window.reJoinRoom = function(){
+  isAgain = true;
+  const myPlayer = sessionStorage.getItem("myPlayer");
+  const roomCode = sessionStorage.getItem("roomCode");
+  const request = {
+    type: "RESTART_ROOM_REQUEST",
+    playerName: myPlayer,
+    roomCode: roomCode
+  };
+  worker.port.postMessage(request);
+  location.href = 'invite.html'
+}

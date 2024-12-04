@@ -46,6 +46,7 @@ public class ClientHandler implements Runnable {
                     case "VOTE_START_REQUEST" -> handleVoteStart((VoteStartRequest) request);
                     case "VOTE_REQUEST" -> handleVoteRequest((VoteRequest) request);
                     case "GUESS_WORD_REQUEST" -> handleGuessWordRequest((GuessWordRequest) request);
+                    case "RESTART_ROOM_REQUEST" -> handleRestartRoomRequest((RestartRoomRequest) request);
                 }
             }
         } catch (Exception e) {
@@ -253,6 +254,26 @@ public class ClientHandler implements Runnable {
         }
         if (currentRoom != null) {
             Message response = currentRoom.getGameController().guess(playerName, guessWord);
+            proxyObjectOutputStream.writeObject(response);
+            proxyObjectOutputStream.flush();
+        } else {
+            logger.error("방이 존재하지 않습니다: roomCode={}", code);
+            String errorMessage = "방이 존재하지 않습니다.";
+            ErrorResponse response = new ErrorResponse(playerName, errorMessage);
+            proxyObjectOutputStream.writeObject(response);
+            proxyObjectOutputStream.flush();
+        }
+    }
+
+    private void handleRestartRoomRequest(RestartRoomRequest request) throws IOException {
+        String playerName = request.getPlayerName();
+        String code = request.getRoomCode();
+        GameRoom currentRoom;
+        synchronized (gm) {
+            currentRoom = gm.getRoom(code);
+        }
+        if (currentRoom != null) {
+            Message response = currentRoom.getGameController().restartGame();
             proxyObjectOutputStream.writeObject(response);
             proxyObjectOutputStream.flush();
         } else {

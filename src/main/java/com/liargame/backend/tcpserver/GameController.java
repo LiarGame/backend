@@ -56,12 +56,13 @@ public class GameController {
         }
         gameRoom.incrementSpeakCount();
         int updatedSpeakCount = gameRoom.getSpeakCount();
+        logger.info("updatedSpeakCount={}", updatedSpeakCount);
 
         int currentPlayerAt = players.indexOf(playerName);
         String nextPlayer = currentPlayerAt == players.size() - 1 ? players.get(0) : players.get(currentPlayerAt + 1);
         SpeakResponse speakResponse = new SpeakResponse(players, playerName, message, nextPlayer, gameRoom.getRoomCode(), false);
 
-        if (updatedSpeakCount == players.size() * 2) {
+        if (updatedSpeakCount == players.size()) {
             logger.info("모든 플레이어가 두 번씩 발언을 완료했습니다. 토론을 시작합니다.");
             speakResponse = new SpeakResponse(players, playerName, message, nextPlayer, gameRoom.getRoomCode(), true);
         }
@@ -118,6 +119,8 @@ public class GameController {
             if (!isLiarCaught) {
                 List<String> playersWithoutLiar = new ArrayList<>(gameRoom.getPlayers());
                 playersWithoutLiar.remove(liar);
+                gameRoom.updatePlayerScore(liar, 3);
+                liar = gameRoom.getLiar();
                 endGame();
                 return new GameResultResponse(List.of(liar), playersWithoutLiar, List.of(liar), gameRoom.getTopic(), gameRoom.getWord(), code);
             }
@@ -129,29 +132,64 @@ public class GameController {
     }
     public Message guess(String playerName, String guessWord) {
         String code = gameRoom.getRoomCode();
+
         if (!startFlag) {
             logger.error("게임을 진행중인 방이 아닙니다: roomCode={}", code);
             String errorMessage = "게임을 진행중인 방이 아닙니다.";
             return new ErrorResponse(playerName, errorMessage);
         }
+
         if (!playerName.equals(gameRoom.getLiar())) {
             logger.error("라이어가 아닙니다: playerName={}, liar={}", playerName, gameRoom.getLiar());
             return new ErrorResponse(playerName, "라이어가 아닙니다.");
         }
+
         TopicEnum topic = gameRoom.getTopic();
         String word = gameRoom.getWord();
-        boolean isGuessCorrect = guessWord.equals(gameRoom.getWord());
+        boolean isGuessCorrect = guessWord.equals(word);
         String liar = gameRoom.getLiar();
+
         List<String> playersWithoutLiar = new ArrayList<>(gameRoom.getPlayers());
-        playersWithoutLiar.remove(liar);
-        List<String> winner = isGuessCorrect ? Collections.singletonList(gameRoom.getLiar()) : playersWithoutLiar;
+        playersWithoutLiar.remove(liar); // 시민팀 리스트 생성
+
+        // 점수 업데이트 로직
+        if (isGuessCorrect) {
+            // 라이어 정답 추측 성공 -> 라이어 +3점
+            gameRoom.updatePlayerScore(liar, 3);
+            liar = gameRoom.getLiar();
+            logger.info("라이어가 정답을 맞혔습니다: playerName={}, scoreUpdated=+3", liar);
+        } else {
+            // 라이어 정답 추측 실패 -> 시민팀 각각 +1점
+            for (String citizen : playersWithoutLiar) {
+                gameRoom.updatePlayerScore(citizen, 1);
+                playersWithoutLiar = gameRoom.getPlayers();
+                playersWithoutLiar.remove(liar);
+                logger.info("시민에게 점수 추가: citizen={}, scoreUpdated=+1", citizen);
+            }
+        }
+
+        List<String> winner = isGuessCorrect
+                ? Collections.singletonList(gameRoom.getLiar())
+                : playersWithoutLiar;
 
         endGame();
 
         logger.info("라이어가 단어를 추측했습니다: playerName={}, guessWord={}, isGuessCorrect={}, winner={}",
                 playerName, guessWord, isGuessCorrect, winner);
 
-        return new GameResultResponse(winner, playersWithoutLiar, List.of(liar), topic, word, code);
+        return new GameResultResponse(
+                winner,
+                playersWithoutLiar,
+                List.of(liar),
+                topic,
+                word,
+                code
+        );
+    }
+
+    public Message restartGame() {
+        List<String> players = gameRoom.getPlayers();
+        return new RestartRoomResponse(players, gameRoom.getRoomCode());
     }
 
     public boolean isAllPlayersSpokeTwice() {

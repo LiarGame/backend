@@ -30,7 +30,7 @@ public class GameRoom {
     public void addPlayer(String playerName) {
         logger.info("플레이어가 방에 참여했습니다: playerName={}", playerName);
         synchronized (players) {
-            players.add(playerName);
+            players.add(playerName + "(0)");
         }
     }
 
@@ -42,6 +42,11 @@ public class GameRoom {
 
     public synchronized String getLiar() {
         return liar;
+    }
+
+    public synchronized void setLiar(String liarWithScore) {
+        this.liar = liarWithScore;
+        logger.info("라이어가 재설정되었습니다: {}", liarWithScore);
     }
 
     public synchronized TopicEnum getTopic() {
@@ -88,5 +93,26 @@ public class GameRoom {
         liar = null;
         topic = null;
         word = null;
+    }
+
+    public synchronized void updatePlayerScore(String playerWithScore, int additionalScore) {
+        for (int i = 0; i < players.size(); i++) {
+            String currentPlayer = players.get(i);
+            if (currentPlayer.equals(playerWithScore)) {
+                String playerName = currentPlayer.substring(0, currentPlayer.indexOf("("));
+                int currentScore = Integer.parseInt(currentPlayer.substring(currentPlayer.indexOf("(") + 1, currentPlayer.indexOf(")")));
+                String updatedPlayer = playerName + "(" + (currentScore + additionalScore) + ")";
+                players.set(i, updatedPlayer);
+
+                if (playerWithScore.equals(liar)) {
+                    setLiar(updatedPlayer);
+                }
+                return;
+            }
+        }
+    }
+
+    public int getPlayerScore(String playerWithScore) {
+        return Integer.parseInt(playerWithScore.substring(playerWithScore.indexOf("(") + 1, playerWithScore.indexOf(")")));
     }
 }
