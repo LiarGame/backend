@@ -1,7 +1,5 @@
 package com.liargame.backend.proxyserver;
 
-import com.liargame.backend.message.Message;
-import com.liargame.backend.message.Response;
 import org.java_websocket.WebSocket;
 import org.java_websocket.handshake.ClientHandshake;
 import org.json.JSONObject;
@@ -10,8 +8,6 @@ import org.slf4j.LoggerFactory;
 
 import java.net.InetSocketAddress;
 import java.io.IOException;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
