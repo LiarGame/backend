@@ -450,7 +450,7 @@ window.Discuss = function () {
   secondPTag.classList.add("secondPTagStyle");
   contentDiv.appendChild(secondPTag);
 
-  let second = 1;
+  let second = 60;
   const countdown = setInterval(() => {
     secondPTag.textContent = second; // 남은 시간 표시
     second--; // 1초 감소

@@ -64,7 +64,7 @@ public class GameController {
         String nextPlayer = currentPlayerAt == players.size() - 1 ? players.get(0) : players.get(currentPlayerAt + 1);
         SpeakResponse speakResponse = new SpeakResponse(players, playerName, message, nextPlayer, gameRoom.getRoomCode(), false);
 
-        if (updatedSpeakCount == players.size()) {
+        if (updatedSpeakCount == players.size() * 2) {
             logger.info("모든 플레이어가 두 번씩 발언을 완료했습니다. 토론을 시작합니다.");
             speakResponse = new SpeakResponse(players, playerName, message, nextPlayer, gameRoom.getRoomCode(), true);
         }
