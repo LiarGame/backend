@@ -8,6 +8,8 @@ sessionStorage.getItem("isHost") === "true" ? (isHost = true) : (isHost = false)
 sessionStorage.getItem("isFinal") === "true" ? (isFinal = true) : (isFinal = false);
 sessionStorage.getItem("isAgain") === "true" ? (isAgain = true) : (isAgain = false);
 let roomCode = 12345; // 임시 방 코드
+:ㅂ
+::
 
 document.addEventListener("DOMContentLoaded", () => {
   const currentPath = window.location.pathname;
@@ -240,9 +242,12 @@ worker.port.onmessage = (event) => {
 window.sendHost = function (name) {
   if (isHost) {
     console.log(name);
-    worker.port.postMessage(
-        JSON.stringify({ type: "CREATE_ROOM_REQUEST", playerName: name })
-    );
+    const request = JSON.stringify({
+      type: "CREATE_ROOM_REQUEST",
+      playerName: name
+    });
+
+    worker.port.postMessage(request);
     // 영상 녹화용 시간지연
     setTimeout(() => {
       location.href = "../html/invite.html"; // 방 만들기 후 페이지 이동
