@@ -47,9 +47,11 @@ public class GameController {
     public synchronized Message speakTurn(String playerName, String message) {
         List<String> players = gameRoom.getPlayers();
         int speakCount = gameRoom.getSpeakCount();
+        logger.info("speakCount={}", speakCount);
 
         // 발언 순서가 아닌 플레이어가 발언을 하면 오류 메시지 반환
         String expectedPlayer = players.get(speakCount % players.size());
+        logger.info("expectedPlayer={}", expectedPlayer);
         if (!expectedPlayer.equals(playerName)) {
             logger.error("현재 발언할 순서가 아닙니다: playerName={}", playerName);
             return new ErrorResponse(playerName, "현재 발언할 순서가 아닙니다.");
@@ -62,7 +64,7 @@ public class GameController {
         String nextPlayer = currentPlayerAt == players.size() - 1 ? players.get(0) : players.get(currentPlayerAt + 1);
         SpeakResponse speakResponse = new SpeakResponse(players, playerName, message, nextPlayer, gameRoom.getRoomCode(), false);
 
-        if (updatedSpeakCount == players.size()) {
+        if (updatedSpeakCount == players.size() * 2) {
             logger.info("모든 플레이어가 두 번씩 발언을 완료했습니다. 토론을 시작합니다.");
             speakResponse = new SpeakResponse(players, playerName, message, nextPlayer, gameRoom.getRoomCode(), true);
         }
@@ -150,16 +152,13 @@ public class GameController {
         String liar = gameRoom.getLiar();
 
         List<String> playersWithoutLiar = new ArrayList<>(gameRoom.getPlayers());
-        playersWithoutLiar.remove(liar); // 시민팀 리스트 생성
+        playersWithoutLiar.remove(liar);
 
-        // 점수 업데이트 로직
         if (isGuessCorrect) {
-            // 라이어 정답 추측 성공 -> 라이어 +3점
             gameRoom.updatePlayerScore(liar, 3);
             liar = gameRoom.getLiar();
             logger.info("라이어가 정답을 맞혔습니다: playerName={}, scoreUpdated=+3", liar);
         } else {
-            // 라이어 정답 추측 실패 -> 시민팀 각각 +1점
             for (String citizen : playersWithoutLiar) {
                 gameRoom.updatePlayerScore(citizen, 1);
                 playersWithoutLiar = gameRoom.getPlayers();
@@ -190,11 +189,6 @@ public class GameController {
     public Message restartGame() {
         List<String> players = gameRoom.getPlayers();
         return new RestartRoomResponse(players, gameRoom.getRoomCode());
-    }
-
-    public boolean isAllPlayersSpokeTwice() {
-        List<String> players = gameRoom.getPlayers();
-        return gameRoom.getSpeakCount() >= players.size() * 2;
     }
 
     public void endGame() {

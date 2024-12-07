@@ -213,8 +213,20 @@ worker.port.onmessage = (event) => {
       break;
 
     case "RESTART_ROOM_RESPONSE":
+      // 플레이어 리스트 업데이트
       sessionStorage.setItem("playerList", JSON.stringify(message.playerList));
-      // 재시작 시 플레이어 리스트를 다시 렌더링
+
+      const updatedPlayerList = JSON.parse(sessionStorage.getItem("playerList"));
+      const myPlayerName = sessionStorage.getItem("myPlayer").split("(")[0];
+      const updatedMyPlayer = updatedPlayerList.find(player => player.startsWith(myPlayerName));
+      if (updatedMyPlayer) {
+        sessionStorage.setItem("myPlayer", updatedMyPlayer);
+        console.log("Updated myPlayer:", updatedMyPlayer);
+      } else {
+        console.error("Failed to update myPlayer. Updated player list:", updatedPlayerList);
+      }
+
+      // 렌더링 업데이트
       if (window.location.pathname.includes("html/invite.html")) {
         renderPlayerList(message.playerList);
       }
@@ -440,7 +452,7 @@ window.Discuss = function () {
   secondPTag.classList.add("secondPTagStyle");
   contentDiv.appendChild(secondPTag);
 
-  let second = 1;
+  let second = 60;
   const countdown = setInterval(() => {
     secondPTag.textContent = second; // 남은 시간 표시
     second--; // 1초 감소
