@@ -18,7 +18,7 @@ public class ServerManager {
 
     public ServerManager() {
         // JSON 파일에서 설정 로드
-        config = ConfigLoader.loadConfig("config.json");
+        config = ConfigLoader.loadConfig("server-config.json");
     }
 
     public void startServers() {
