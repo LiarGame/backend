@@ -20,10 +20,14 @@ public class MessageSender {
         }
     }
 
-    // 모든 클라이언트에게 메시지 브로드캐스트
     public static void broadcastMessage(Collection<WebSocket> clients, String message) {
         for (WebSocket client : clients) {
-            sendMessage(client, message);
+            if (client.isOpen()) { // 연결 상태 확인
+                sendMessage(client, message);
+            } else {
+                logger.warn("닫힌 웹소켓으로 메시지를 전송하려고 했습니다. 해당 클라이언트를 제거해야 합니다.");
+            }
         }
     }
+
 }
