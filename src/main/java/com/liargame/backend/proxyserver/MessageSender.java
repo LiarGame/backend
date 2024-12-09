@@ -25,7 +25,7 @@ public class MessageSender {
             if (client.isOpen()) { // 연결 상태 확인
                 sendMessage(client, message);
             } else {
-                logger.warn("닫힌 웹소켓으로 메시지를 전송하려고 했습니다. 해당 클라이언트를 제거해야 합니다.");
+                logger.warn("해당 웹소켓이 닫혀있어 메세지를 전송할 수 없슨니다.");
             }
         }
     }
