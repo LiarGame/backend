@@ -22,8 +22,8 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   if (currentPath.includes("html/invite.html") && isAgain) {
-    clearGameSessionData(); // 불필요한 세션 데이터 초기화
-    updateMyPlayer(); // 플레이어 명 업데이트
+    // clearGameSessionData(); // 불필요한 세션 데이터 초기화
+    // updateMyPlayer(); // 플레이어 명 업데이트
     renderPlayerList(JSON.parse(sessionStorage.getItem("playerList"))); // 여러 플레이어 이름 랜더링
   }
 
