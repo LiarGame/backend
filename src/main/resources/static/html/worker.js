@@ -9,10 +9,10 @@ onconnect = (e) => {
 
     // WebSocket 연결
     if (!socket) {
-        fetch('../../config.json') // 상위 폴더에 있는 config.json 파일을 가져옴
-            // config.json 경로를 설정
+        fetch('../client-config.json') // 상위 폴더에 있는 server-client-server-config.json 파일을 가져옴
+            // server-client-server-config.json 경로를 설정
             .then(response => {
-                if (!response.ok) throw new Error("Failed to load config.json");
+                if (!response.ok) throw new Error("Failed to load server-client-server-config.json");
                 return response.json();
             })
             .then(config => {
